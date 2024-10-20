@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend", "Maschinenampel.Server\Backend.csproj", "{D5B70622-3AE4-4562-8004-B49600A6E387}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Frontend", "maschinenampel.client\Frontend.esproj", "{424DB0B0-6C53-4A3E-83BC-1DDDB8D84A6E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D5B70622-3AE4-4562-8004-B49600A6E387}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5B70622-3AE4-4562-8004-B49600A6E387}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5B70622-3AE4-4562-8004-B49600A6E387}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5B70622-3AE4-4562-8004-B49600A6E387}.Release|Any CPU.Build.0 = Release|Any CPU
+		{424DB0B0-6C53-4A3E-83BC-1DDDB8D84A6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{424DB0B0-6C53-4A3E-83BC-1DDDB8D84A6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{424DB0B0-6C53-4A3E-83BC-1DDDB8D84A6E}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{424DB0B0-6C53-4A3E-83BC-1DDDB8D84A6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{424DB0B0-6C53-4A3E-83BC-1DDDB8D84A6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{424DB0B0-6C53-4A3E-83BC-1DDDB8D84A6E}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {217090F1-5FF4-42EB-BD92-9EE4C01CB8F5}
+	EndGlobalSection
+EndGlobal
