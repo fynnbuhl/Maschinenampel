@@ -1,0 +1,20 @@
+<div>
+  <h1>{{ title }}</h1>
+
+  <h2>Dashboard-Daten</h2>
+
+  <!-- Prüfe, ob Dashboards geladen wurden -->
+  <div *ngIf="Dashboards.length > 0; else noData">
+    <ul>
+      <!-- Durchlaufe die JSON-Daten und zeige sie an -->
+      <li *ngFor="let dashboard of Dashboards">
+        ID: {{ dashboard.ID }} - Name: {{ dashboard.NAME }} - Bildpfad: {{ dashboard.IMG_PATH }}
+      </li>
+    </ul>
+  </div>
+
+  <!-- Fallback-Message, wenn keine Dashboards vorhanden sind -->
+  <ng-template #noData>
+    <p>Keine Dashboards gefunden.</p>
+  </ng-template>
+</div>

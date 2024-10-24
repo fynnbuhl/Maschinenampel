@@ -1,0 +1,6 @@
+@Maschinenampel.Server_HostAddress = http://localhost:5252
+
+GET {{Maschinenampel.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
