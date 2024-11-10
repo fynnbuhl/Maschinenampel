@@ -1,20 +1,19 @@
-<div>
-  <h1>{{ title }}</h1>
+<!-- Dieser DIV-Block wird nur angezeigt, wenn die aktuelle URL die Startseite ('/') ist -->
+<div *ngIf="router.url === '/'">
 
-  <h2>Dashboard-Daten</h2>
+  <h1>MENÜ</h1>
 
-  <!-- Prüfe, ob Dashboards geladen wurden -->
-  <div *ngIf="Dashboards.length > 0; else noData">
-    <ul>
-      <!-- Durchlaufe die JSON-Daten und zeige sie an -->
-      <li *ngFor="let dashboard of Dashboards">
-        ID: {{ dashboard.ID }} - Name: {{ dashboard.NAME }} - Bildpfad: {{ dashboard.IMG_PATH }}
-      </li>
-    </ul>
-  </div>
+  <!-- Navigationsbuttons für verschiedene Aktionen -->
+  <!-- Jeder Button verwendet routerLink, um zur entsprechenden Seite zu navigieren -->
+  <!-- Button zur Anzeige des Dashboards. Leitet zur Route '/displayDashboard' -->
+  <button routerLink="/displayDashboard"> Dashboard anzeigen </button>
 
-  <!-- Fallback-Message, wenn keine Dashboards vorhanden sind -->
-  <ng-template #noData>
-    <p>Keine Dashboards gefunden.</p>
-  </ng-template>
+  <!-- Button zum Hinzufügen eines neuen Dashboards. Leitet zur Route '/addDashboard' -->
+  <button routerLink="/addDashboard"> Dashboard hinzufügen </button>
+
+  <!-- Button zum Updaten eines vorhandenen Dashboards. Leitet zur Route '/updateDashboard' -->
+  <button routerLink="/updateDashboard"> Dashboard updaten </button>
 </div>
+
+<!-- Router-Outlet: Hier wird der Inhalt der aktuellen Route gerendert, z. B. die ausgewählte Seite oder Komponente -->
+<router-outlet></router-outlet>

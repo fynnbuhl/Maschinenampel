@@ -20,6 +20,8 @@ namespace Maschinenampel.Server.Controllers
             _configuration = configuration; // Initialisierung der Konfiguration
         }
 
+
+
         // Asynchrone Methode zur Abfrage von Dashboards
         [HttpGet] // HTTP GET-Anforderung
         [Route("getDashboards")] // Spezifische Route für diese Methode
@@ -37,6 +39,8 @@ namespace Maschinenampel.Server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = ex.Message }); // Gibt einen 500 Fehler mit der Fehlermeldung zurück
             }
         }
+
+
 
         // Asynchrone Methode zum Hinzufügen eines Dashboards
         [HttpPost] // HTTP POST-Anforderung
@@ -69,6 +73,8 @@ namespace Maschinenampel.Server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = ex.Message }); // Gibt einen 500 Fehler zurück
             }
         }
+
+
 
         // Asynchrone Methode zum Entfernen eines Dashboards
         [HttpPost] // HTTP POST-Anforderung
@@ -105,6 +111,10 @@ namespace Maschinenampel.Server.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = ex.Message }); // Gibt einen 500 Fehler zurück
             }
         }
+
+
+
+
 
         // Hilfsmethode zur Ausführung eines SQL-Select-Befehls
         private async Task<DataTable> ExecuteQueryAsync(string query)
