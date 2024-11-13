@@ -1,3 +1,22 @@
 <router-outlet></router-outlet>
-<button routerLink="/"> Menü </button>
-<p>update-dashboard works!</p>
+<button routerLink="/">Menü</button>
+
+<h1>Dashboard Updaten</h1>
+
+<!-- Überprüfe, ob die Dashboards-Daten erfolgreich geladen wurden -->
+<!-- Dieser Block wird nur angezeigt, wenn mindestens ein Dashboard-Element in der Dashboards-Liste vorhanden ist -->
+<div *ngIf="Dashboards.length > 0; else noData">
+  <ul>
+    <!-- Schleife durch die Dashboards-Liste und zeige für jedes Element die ID, den Namen und den Bildpfad an -->
+    <!-- *ngFor iteriert über jedes Dashboard-Objekt und zeigt dessen Eigenschaften an -->
+    <li *ngFor="let dashboard of Dashboards">
+      ID: {{ dashboard.ID }} - Name: {{ dashboard.NAME }} - Bildpfad: {{ dashboard.IMG_PATH }}
+    </li>
+  </ul>
+</div>
+
+<!-- Fallback-Nachricht: Falls keine Dashboards-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
+<!-- Das #noData-Template wird verwendet, wenn Dashboards leer ist -->
+<ng-template #noData>
+  <p>Keine Dashboards gefunden.</p>
+</ng-template>

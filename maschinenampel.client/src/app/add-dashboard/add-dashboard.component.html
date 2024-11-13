@@ -1,3 +1,12 @@
 <router-outlet></router-outlet>
-<button routerLink="/"> Menü </button>
-<p>add-dashboard works!</p>
+<button routerLink="/">Menü</button>
+
+<h1>Dashboard hinzufügen</h1>
+
+<input type="text" placeholder="Dashboard Name" [(ngModel)]="newBoard" />
+<input type="text" placeholder="Hallenlayout" [(ngModel)]="IMG_PATH" />
+
+<br />
+<button (click)="add_board()">Board hinzufügen</button>
+
+<p>Ampeln können unter <a routerLink="/updateDashboard"> Dashboard updaten </a> hinzugefügt werden!</p>
