@@ -4,18 +4,17 @@
   <h1>MENÜ</h1>
 
   <!-- Navigationsbuttons für verschiedene Aktionen -->
-  <!-- Jeder Button verwendet routerLink, um zur entsprechenden Seite zu navigieren -->
-  <!-- Button zur Anzeige des Dashboards. Leitet zur Route '/displayDashboard' -->
-  <button routerLink="/displayDashboard"> Dashboard anzeigen </button>
-  <br />
+  <div class="button-container">
+    <!-- Jeder Button verwendet routerLink, um zur entsprechenden Seite zu navigieren -->
+    <!-- Button zur Anzeige des Dashboards. Leitet zur Route '/displayDashboard' -->
+    <button class="menu-button" routerLink="/displayDashboard"> Dashboard anzeigen </button>
 
-  <!-- Button zum Hinzufügen eines neuen Dashboards. Leitet zur Route '/addDashboard' -->
-  <button routerLink="/addDashboard"> Dashboard hinzufügen </button>
-  <br />
+    <!-- Button zum Hinzufügen eines neuen Dashboards. Leitet zur Route '/addDashboard' -->
+    <button class="menu-button" routerLink="/addDashboard"> Dashboard hinzufügen </button>
 
-  <!-- Button zum Updaten eines vorhandenen Dashboards. Leitet zur Route '/updateDashboard' -->
-  <button routerLink="/updateDashboard"> Dashboard updaten </button>
-  <br />
+    <!-- Button zum Updaten eines vorhandenen Dashboards. Leitet zur Route '/updateDashboard' -->
+    <button class="menu-button" routerLink="/updateDashboard"> Dashboard updaten </button>
+  </div>
 </div>
 
 <!-- Router-Outlet: Hier wird der Inhalt der aktuellen Route gerendert, z. B. die ausgewählte Seite oder Komponente -->
