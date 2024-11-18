@@ -22,7 +22,7 @@ namespace Maschinenampel.Server.Controllers
 
 
 
-        // Asynchrone Methode zur Abfrage von Dashboards
+// Asynchrone Methode zur Abfrage von Dashboards
         [HttpGet] // HTTP GET-Anforderung
         [Route("getDashboards")] // Spezifische Route für diese Methode
         public async Task<IActionResult> GetDashboardsAsync()
@@ -42,7 +42,7 @@ namespace Maschinenampel.Server.Controllers
 
 
 
-        // Asynchrone Methode zum Hinzufügen eines Dashboards
+// Asynchrone Methode zum Hinzufügen eines Dashboards
         [HttpPost] // HTTP POST-Anforderung
         [Route("addDashboard")] // Spezifische Route für diese Methode
         public async Task<IActionResult> AddDashboardAsync([FromForm] string Name, [FromForm] string IMG_PATH)
@@ -76,7 +76,7 @@ namespace Maschinenampel.Server.Controllers
 
 
 
-        // Asynchrone Methode zum Entfernen eines Dashboards
+// Asynchrone Methode zum Entfernen eines Dashboards
         [HttpPost] // HTTP POST-Anforderung
         [Route("removeDashboard")] // Spezifische Route für diese Methode
         public async Task<IActionResult> RemoveDashboardAsync([FromForm] int ID)
@@ -116,7 +116,7 @@ namespace Maschinenampel.Server.Controllers
 
 
 
-        // Hilfsmethode zur Ausführung eines SQL-Select-Befehls
+// Hilfsmethode zur Ausführung eines SQL-Select-Befehls
         private async Task<DataTable> ExecuteQueryAsync(string query)
         {
             DataTable dataTable = new DataTable(); // Erstellt ein neues DataTable für die Ergebnisse
@@ -137,7 +137,7 @@ namespace Maschinenampel.Server.Controllers
             return dataTable; // Gibt das DataTable mit den Ergebnissen zurück
         }
 
-        // Hilfsmethode zur Ausführung eines SQL-Befehls (z.B. INSERT, UPDATE, DELETE)
+// Hilfsmethode zur Ausführung eines SQL-Befehls (z.B. INSERT, UPDATE, DELETE)
         private async Task<int> ExecuteNonQueryAsync(string query, SqlParameter[] parameters)
         {
             string sqlDatasource = _configuration.GetConnectionString("DBConnect"); // Datenbank-Verbindungszeichenfolge aus appsettings.json 

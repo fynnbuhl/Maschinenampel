@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +34,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
+//Aktiviert die Middleware für den Zugriff auf statische Dateien
+app.UseStaticFiles(new StaticFileOptions
+{
+    // Definiert einen FileProvider, der auf das Verzeichnis "Datenbank/img" verweist
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Datenbank/img")
+    ),
+    // Legt fest, unter welchem Pfad die Dateien im Web verfügbar sind
+    RequestPath = "/Datenbank/img"
+});
 
 app.UseHttpsRedirection();
 
