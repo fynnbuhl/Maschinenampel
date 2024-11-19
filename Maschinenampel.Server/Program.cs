@@ -17,13 +17,20 @@ builder.Services.AddControllers().AddNewtonsoftJson(options=>
 options.SerializerSettings.ReferenceLoopHandling=Newtonsoft.Json.ReferenceLoopHandling.Ignore).AddNewtonsoftJson(options=>options.SerializerSettings.ContractResolver=new DefaultContractResolver());
 
 //|DataDirectory|-Platzhalter für Relativen-Datenbankpfad in appsettings.json initalisieren
-AppDomain.CurrentDomain.SetData("DataDirectory", Directory.GetCurrentDirectory()); //C:\\Users\\fynnb\\source\\repos\\Maschinenampel\\Maschinenampel.Server
+AppDomain.CurrentDomain.SetData("DataDirectory", Directory.GetCurrentDirectory());
 
 
 var app = builder.Build();
 
+//Aktiviert die Middleware für den Zugriff auf statische Dateien
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
+    RequestPath = ""
+});
+
 app.UseDefaultFiles();
-app.UseStaticFiles();
 
 //Enable CORS
 app.UseCors(c=>c.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
@@ -36,17 +43,6 @@ if (app.Environment.IsDevelopment())
 }
 
 
-//Aktiviert die Middleware für den Zugriff auf statische Dateien
-app.UseStaticFiles(new StaticFileOptions
-{
-    // Definiert einen FileProvider, der auf das Verzeichnis "Datenbank/img" verweist
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "Datenbank/img")
-    ),
-    // Legt fest, unter welchem Pfad die Dateien im Web verfügbar sind
-    RequestPath = "/Datenbank/img"
-});
-
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
@@ -56,3 +52,4 @@ app.MapControllers();
 app.MapFallbackToFile("/index.html");
 
 app.Run();
+

@@ -1,1 +1,48 @@
-/* Hier nichts eintragen!*/
+/* Hier nichts weiter eintragen!*/
+
+
+.ampel-container {
+  position: absolute;
+  width: 95%;
+  height: 90vh;
+  border: thin solid black;
+  background-repeat: no-repeat;
+  background-size: contain;
+  padding: 5px;
+}
+
+.ampel {
+  background-color: #242424;
+  color: #ffffff;
+  border-radius: 8px;
+  position: absolute;
+  border: thin solid black;
+  align-content: center;
+}
+
+.noData {
+  width: auto;
+  height: auto;
+  padding: 10px;
+  margin: 10px;
+  line-height: 1.8;
+  border-radius: 5px;
+  background-color: #FDF7DF;
+  border: 1px solid #FEEC6F;
+  color: #C9971C;
+}
+
+.background-container {
+  width: 100%;
+  height: 100%;
+  border: 1px solid red;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hallenlayout {
+  object-fit: contain;
+  width: 100%;
+  height: 100%
+}

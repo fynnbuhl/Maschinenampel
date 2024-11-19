@@ -4,5 +4,4 @@
 [IMG_PATH] VARCHAR(50) NOT NULL
 );
 
-INSERT INTO DashboardDB (NAME, IMG_PATH) VALUES ('Board01', '/img/test1.png');
-INSERT INTO DashboardDB (NAME, IMG_PATH) VALUES ('Board02', '/img/test2.png');
+INSERT INTO DashboardDB (NAME, IMG_PATH) VALUES ('Board_TEST', 'images/test.jpg');

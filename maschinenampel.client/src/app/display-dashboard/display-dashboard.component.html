@@ -1,23 +1,70 @@
 <router-outlet></router-outlet>
-<button routerLink="/">Menü</button>
 
-<h1>Dashboard Anzeigen</h1>
+<div *ngIf="selectedID === 0">
 
+  <button routerLink="/">Menü</button>
+  <!-- Dieser Block wird angezeigt, wenn selectedID gleich 0 ist: Kein Board ausgewählt -->
+  <p>Bitte Dashboard ausgewählen:</p>
 
-<!-- Überprüfe, ob die Dashboards-Daten erfolgreich geladen wurden -->
-<!-- Dieser Block wird nur angezeigt, wenn mindestens ein Dashboard-Element in der Dashboards-Liste vorhanden ist -->
-<div *ngIf="Dashboards.length > 0; else noData">
-  <ul>
-    <!-- Schleife durch die Dashboards-Liste und zeige für jedes Element die ID, den Namen und den Bildpfad an -->
-    <!-- *ngFor iteriert über jedes Dashboard-Objekt und zeigt dessen Eigenschaften an -->
-    <li *ngFor="let dashboard of Dashboards">
-      ID: {{ dashboard.ID }} - Name: {{ dashboard.NAME }} - Bildpfad: {{ dashboard.IMG_PATH }}
-    </li>
-  </ul>
+  <div *ngIf="Dashboards.length > 0; else noData">
+    <ul>
+      <!-- Schleife durch die Dashboards-Liste und zeige nur die Namen an -->
+      <li *ngFor="let dashboard of Dashboards">
+        <!-- Anzeige des Dashboard-Namens -->
+        Name: {{ dashboard.NAME }}
+        <!-- Auswahl-Button, der beim Klicken die Methode viewBoard mit der ID + IMG des Dashboards aufruft -->
+        <button (click)="viewBoard(dashboard.ID, dashboard.NAME, dashboard.IMG_PATH)">Auswählen</button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Fallback-Nachricht: Falls keine Dashboards-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
+  <!-- Das #noData-Template wird verwendet, wenn Dashboards leer ist -->
+  <ng-template #noData>
+    <p>Keine Dashboards gefunden.</p>
+  </ng-template>
+
 </div>
 
-<!-- Fallback-Nachricht: Falls keine Dashboards-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
-<!-- Das #noData-Template wird verwendet, wenn Dashboards leer ist -->
-<ng-template #noData>
-  <p>Keine Dashboards gefunden.</p>
-</ng-template>
+
+
+
+<div *ngIf="selectedID > 0">
+  <!-- Dieser Block wird angezeigt, wenn selectedID größer als 0 ist: Board ausgewählt mit selectedID=ID -->
+  <div class="menu">
+    <button routerLink="/">Menü</button>
+    <button (click)="clearID()">Auswahl aufheben</button>
+    Aktuelle Ansicht: Dashboard {{selectedNAME}} (ID={{ selectedID }})
+  </div>
+
+  <!-- Überprüfe, ob die Ampel-Daten erfolgreich geladen wurden -->
+  <!-- Dieser Block wird nur angezeigt, wenn mindestens ein Ampel-Element in der Ampel-Liste vorhanden ist -->
+  <div *ngIf="Ampeln.length > 0; else noDataAmpel">
+    <div class="ampel-container">
+      <div class="background-container">
+        <img class="hallenlayout" src={{selectedIMG}} />
+      </div>
+
+      <!-- Schleife durch die Ampel-Liste und zeige für jedes Element die Inhalte an -->
+      <!-- *ngFor iteriert über jedes Ampel-Objekt und zeigt dessen Eigenschaften an -->
+      <div *ngFor="let ampel of Ampeln" class="ampel" [ngStyle]="getElementStyles(ampel)">
+        ID: {{ ampel.ID }}, x: {{ ampel.POS_X }}, y: {{ ampel.POS_Y }}
+      </div>
+    </div>
+  </div>
+
+  <br />
+  <!-- Fallback-Nachricht: Falls keine Ampel-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
+  <!-- Das #noDataAmpel-Template wird verwendet, wenn Ampeln leer ist -->
+  <ng-template #noDataAmpel>
+    <div class="ampel-container" style="background-image: url('{{selectedIMG}}')">
+      <p class="noData">Keine Ampeln gefunden.</p>
+    </div>
+  </ng-template>
+
+
+
+
+
+
+</div>

@@ -11,14 +11,24 @@ import { ApiConfigService } from '@service/API_Service'; //ApiConfigService wird
   styleUrl: './display-dashboard.component.css' // Das CSS für die Gestaltung dieser Komponente
 })
 export class DisplayDashboardComponent implements OnInit {
-  // Die URL der API, die verwendet wird, um Dashboards-Daten abzurufen
-  //readonly APIUrl = "https://localhost:7204/api/DBController/";
 
-  // Ein Array, in dem die abgerufenen Dashboards gespeichert werden
+  selectedID: number = 0;
+  selectedNAME: string = "";
+  selectedIMG: string = "";
+
+  // Ein Array, in dem die abgerufenen Dashboards/Ampeln gespeichert werden
   Dashboards: any[] = [];
+  Ampeln: any[] = [];
 
   // Der Konstruktor, der die Abhängigkeiten (HttpClient und Router) für diese Komponente injiziert
   constructor(private http: HttpClient, public router: Router, private apiConfig: ApiConfigService) { }
+
+  // ngOnInit ist ein Angular-Lebenszyklus-Hook, der beim Initialisieren der Komponente aufgerufen wird
+  // Hier wird die Methode refreshBoards aufgerufen, um die Dashboards-Daten beim Laden der Komponente zu laden
+  ngOnInit() {
+    this.refreshBoards();
+  }
+
 
   // Methode zum Abrufen der Dashboards-Daten von der API
   refreshBoards() {
@@ -26,13 +36,62 @@ export class DisplayDashboardComponent implements OnInit {
     this.http.get<any[]>(this.apiConfig.DB_APIUrl + 'getDashboards')
       .subscribe(data => { // Wenn die Antwort empfangen wird:
         this.Dashboards = data; // Speichert die empfangenen Daten in der Dashboards-Variable
-        console.log("API Response:", data); // Gibt die empfangenen Daten zur Kontrolle in der Konsole aus
+        //console.log("API Response:", data); // Gibt die empfangenen Daten zur Kontrolle in der Konsole aus
       });
   }
 
-  // ngOnInit ist ein Angular-Lebenszyklus-Hook, der beim Initialisieren der Komponente aufgerufen wird
-  // Hier wird die Methode refreshBoards aufgerufen, um die Dashboards-Daten beim Laden der Komponente zu laden
-  ngOnInit() {
+
+  viewBoard(ID: number, NAME: string, IMG_PATH: string): void {
+    this.selectedID = ID;
+    this.selectedNAME = NAME;
+    this.selectedIMG = IMG_PATH;
+    console.log("Ausgewählte Dashboard-ID:" + this.selectedID);
+
     this.refreshBoards();
+    this.getAmpelnVonBoard();
   }
+
+
+  clearID(): void {
+    this.selectedID = 0;
+    this.selectedNAME = "";
+    this.selectedIMG = "";
+  }
+
+
+  // Methode zum Abrufen der Ampel-Daten von der API
+  getAmpelnVonBoard() {
+    // Mit HttpClient wird eine GET-Anfrage an die API gesendet, um die Ampel-Daten zu erhalten
+    this.http.get<any[]>(`${this.apiConfig.DB_APIUrl}getAmpeln?selected_ID=${this.selectedID}`)
+      .subscribe(data => { // Wenn die Antwort empfangen wird:
+        this.Ampeln = data; // Speichert die empfangenen Daten in der Ampel-Variable
+        //console.log("API Response:", data); // Gibt die empfangenen Daten zur Kontrolle in der Konsole aus
+      });
+  }
+
+
+
+  // Methode, um die Styles für jedes Ampel-Element zu berechnen
+  getElementStyles(element: any) {
+    const height = element.ColorCount * element.SIZE * 0.66;
+
+    // Berechnung der Position und Größe für das Ampel-Element
+    const styles = {
+      left: `${element.POS_X}%`,
+      top: `${element.POS_Y}%`,
+      width: `${element.SIZE}px`,
+      height: `${height}px`,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    };
+
+    return styles;
+  }
+
+
+
+
+  
 }

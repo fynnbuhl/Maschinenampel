@@ -10,7 +10,7 @@ namespace Maschinenampel.Server.Controllers
     public class UploadController : ControllerBase
     {
         // Der Pfad, in dem die hochgeladenen Dateien gespeichert werden
-        private readonly string _uploadPath = "./Datenbank/img";
+        private readonly string _uploadPath = "./wwwroot/images";
 
         // Konstruktor des Controllers
         public UploadController()
@@ -62,7 +62,7 @@ namespace Maschinenampel.Server.Controllers
 
                 // **Antwort mit dem neuen Dateinamen zurückgeben**
                 // Gibt den Dateipfad als URL zurück (JSON-Objekt mit der Eigenschaft "URL")
-                return Ok(new { URL = filePath });
+                return Ok(new { URL = filePath.Substring(9) }); //entferne ./wwwroot aus der URL
             }
             catch (Exception ex) // Fängt alle möglichen Fehler während des Upload-Prozesses ab
             {

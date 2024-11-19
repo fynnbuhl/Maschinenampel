@@ -46,6 +46,7 @@ export class AddDashboardComponent implements OnInit {
 
       // Speichere die neuen Daten in der Datenbank
       await this.saveToDB();
+      await window.location.reload(); //Komponente neu laden
       console.log("Neues Board erfolgreich hinzugefügt.");
 
       // Benutzerfeedback: Bestätigung, dass das Board erfolgreich gespeichert wurde

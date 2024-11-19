@@ -1,22 +1,148 @@
 <router-outlet></router-outlet>
-<button routerLink="/">Menü</button>
 
-<h1>Dashboard Updaten</h1>
+<div *ngIf="selectedID === 0">
 
-<!-- Überprüfe, ob die Dashboards-Daten erfolgreich geladen wurden -->
-<!-- Dieser Block wird nur angezeigt, wenn mindestens ein Dashboard-Element in der Dashboards-Liste vorhanden ist -->
-<div *ngIf="Dashboards.length > 0; else noData">
-  <ul>
-    <!-- Schleife durch die Dashboards-Liste und zeige für jedes Element die ID, den Namen und den Bildpfad an -->
-    <!-- *ngFor iteriert über jedes Dashboard-Objekt und zeigt dessen Eigenschaften an -->
-    <li *ngFor="let dashboard of Dashboards">
-      ID: {{ dashboard.ID }} - Name: {{ dashboard.NAME }} - Bildpfad: {{ dashboard.IMG_PATH }}
-    </li>
-  </ul>
+  <button routerLink="/">Menü</button>
+  <!-- Dieser Block wird angezeigt, wenn selectedID gleich 0 ist: Kein Board ausgewählt -->
+
+  <h1>Dashboard bearbeiten</h1>
+
+  <p>Bitte Dashboard ausgewählen:</p>
+
+  <div *ngIf="Dashboards.length > 0; else noData">
+    <ul>
+      <!-- Schleife durch die Dashboards-Liste und zeige nur die Namen an -->
+      <li *ngFor="let dashboard of Dashboards">
+        <!-- Anzeige des Dashboard-Namens -->
+        Name: {{ dashboard.NAME }}
+        <!-- Auswahl-Button, der beim Klicken die Methode viewBoard mit der ID + IMG des Dashboards aufruft -->
+        <button (click)="viewBoard(dashboard.ID, dashboard.NAME, dashboard.IMG_PATH)">Auswählen</button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Fallback-Nachricht: Falls keine Dashboards-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
+  <!-- Das #noData-Template wird verwendet, wenn Dashboards leer ist -->
+  <ng-template #noData>
+    <p>Keine Dashboards gefunden.</p>
+  </ng-template>
+
 </div>
 
-<!-- Fallback-Nachricht: Falls keine Dashboards-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
-<!-- Das #noData-Template wird verwendet, wenn Dashboards leer ist -->
-<ng-template #noData>
-  <p>Keine Dashboards gefunden.</p>
-</ng-template>
+
+
+
+<div *ngIf="selectedID > 0">
+  <!-- Dieser Block wird angezeigt, wenn selectedID größer als 0 ist: Board ausgewählt mit selectedID=ID -->
+  <div class="menu">
+    <button routerLink="/">Menü</button>
+    <button (click)="clearID()">Auswahl aufheben</button>
+  </div>
+
+
+  <div class="list">
+    Dashboard bearbeiten:
+    <table>
+      <tr>
+        <th>Dashboard Name</th>
+        <th>hinterlegtes Hallenlayout</th>
+        <th></th>
+        <th></th>
+      </tr>
+      <tr>
+        <td>
+          <input [(ngModel)]="selectedNAME" type="text" required palceholder="Dashboard Name" value="{{ selectedNAME }}" />
+        </td>
+        <td>
+          <input type="text" required disabled value="{{ selectedIMG }}" />
+        <td>
+        <td>
+          <button (click)="updateBoard(selectedID)">Update</button>
+        </td>
+        <td>
+          <button (click)="deleteBoard(selectedID)">Löschen</button>
+        <td>
+      </tr>
+    </table>
+  </div>
+
+
+  <div class="list">
+    Ampel hinzufügen:
+    <table>
+      <tr>
+        <th>x-Position</th>
+        <th>y-Position</th>
+        <th>Size</th>
+        <th></th>
+        <th></th>
+      </tr>
+      <tr class="ampelEdit">
+        <td>
+          <input type="number" required placeholder="X-Position in %" [(ngModel)]="POS_X" />
+        </td>
+        <td>
+          <input type="number" required placeholder="Y-Position in %" [(ngModel)]="POS_Y" />
+        </td>
+        <td>
+          <input type="number" required placeholder="Größe in px" [(ngModel)]="SIZE" />
+        </td>
+        <td>
+          <button (click)="addAmpel(selectedID)">Hinzufügen</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+
+  <!-- Überprüfe, ob die Ampel-Daten erfolgreich geladen wurden -->
+  <!-- Dieser Block wird nur angezeigt, wenn mindestens ein Ampel-Element in der Ampel-Liste vorhanden ist -->
+  <div *ngIf="Ampeln.length > 0; else noDataAmpel">
+    <div class="list">
+      Ampeln bearbeiten:
+      <table>
+        <tr>
+          <th>x-Position</th>
+          <th>y-Position</th>
+          <th>Size</th>
+          <th></th>
+          <th></th>
+        </tr>
+        <!-- Schleife durch die Ampel-Liste und zeige für jedes Element die Inhalte an -->
+        <!-- *ngFor iteriert über jedes Ampel-Objekt und zeigt dessen Eigenschaften an -->
+        <tr class="ampelEdit" *ngFor="let ampel of Ampeln">
+
+          <td>
+            <input [(ngModel)]="ampel.POS_X" type="number" required palceholder="X-Position in %" value="{{ ampel.POS_X }}" />
+          </td>
+          <td>
+            <input [(ngModel)]="ampel.POS_Y" type="number" required palceholder="Y-Position in %" value="{{ ampel.POS_Y }}" />
+          </td>
+          <td>
+            <input [(ngModel)]="ampel.SIZE" type="number" required palceholder="Größe in px" value="{{ ampel.SIZE }}" />
+          <td>
+
+            <!-- Buttons für Update und Löschen -->
+          <td>
+            <button (click)="updateAmpel(ampel.ID)">Update</button>
+          </td>
+          <td>
+            <button (click)="deleteAmpel(ampel.ID)">Löschen</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Fallback-Nachricht: Falls keine Ampel-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
+  <!-- Das #noDataAmpel-Template wird verwendet, wenn Ampeln leer ist -->
+  <ng-template #noDataAmpel>
+    <p>Keine Ampeln gefunden.</p>
+  </ng-template>
+
+
+
+
+
+
+</div>

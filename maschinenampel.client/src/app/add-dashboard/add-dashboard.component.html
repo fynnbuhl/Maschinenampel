@@ -4,7 +4,7 @@
 <h1>Dashboard hinzufügen</h1>
 
 <input type="text" placeholder="Dashboard Name" requierd [(ngModel)]="newBoard" />
-<input type="file" requierd (change)="onFileSelected($event)" />
+<input type="file" required accept=".png, .jpg, .jpeg" (change)="onFileSelected($event)" />
 
 <br />
 <button (click)="add_board()">Board hinzufügen</button>
