@@ -5,20 +5,16 @@
   <button routerLink="/">Menü</button>
   <!-- Dieser Block wird angezeigt, wenn selectedID gleich 0 ist: Kein Board ausgewählt -->
 
-  <h1>Dashboard bearbeiten</h1>
-
-  <p>Bitte Dashboard ausgewählen:</p>
+  <p>Bitte Dashboard zum Berabeiten ausgewählen:</p>
 
   <div *ngIf="Dashboards.length > 0; else noData">
-    <ul>
+    <div>
       <!-- Schleife durch die Dashboards-Liste und zeige nur die Namen an -->
-      <li *ngFor="let dashboard of Dashboards">
-        <!-- Anzeige des Dashboard-Namens -->
-        Name: {{ dashboard.NAME }}
+      <div *ngFor="let dashboard of Dashboards">
         <!-- Auswahl-Button, der beim Klicken die Methode viewBoard mit der ID + IMG des Dashboards aufruft -->
-        <button (click)="viewBoard(dashboard.ID, dashboard.NAME, dashboard.IMG_PATH)">Auswählen</button>
-      </li>
-    </ul>
+        <button (click)="viewBoard(dashboard.ID, dashboard.NAME, dashboard.IMG_PATH)">{{ dashboard.NAME }} Auswählen</button>
+      </div>
+    </div>
   </div>
 
   <!-- Fallback-Nachricht: Falls keine Dashboards-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
@@ -45,9 +41,7 @@
     <table>
       <tr>
         <th>Dashboard Name</th>
-        <th>hinterlegtes Hallenlayout</th>
-        <th></th>
-        <th></th>
+        <th>Hallenlayout</th>
       </tr>
       <tr>
         <td>
@@ -65,7 +59,7 @@
       </tr>
     </table>
   </div>
-
+  <hr>
 
   <div class="list">
     Ampel hinzufügen:
@@ -73,19 +67,25 @@
       <tr>
         <th>x-Position</th>
         <th>y-Position</th>
-        <th>Size</th>
-        <th></th>
-        <th></th>
+        <th>Größe</th>
+        <th>Farben</th>
+        <th>OPC-Bits</th>
       </tr>
       <tr class="ampelEdit">
         <td>
-          <input type="number" required placeholder="X-Position in %" [(ngModel)]="POS_X" />
+          <input type="number" required placeholder="X-Position in %" [(ngModel)]="POS_Xnew" />
         </td>
         <td>
-          <input type="number" required placeholder="Y-Position in %" [(ngModel)]="POS_Y" />
+          <input type="number" required placeholder="Y-Position in %" [(ngModel)]="POS_Ynew" />
         </td>
         <td>
-          <input type="number" required placeholder="Größe in px" [(ngModel)]="SIZE" />
+          <input type="number" required placeholder="Größe in px" [(ngModel)]="SIZEnew" />
+        </td>
+        <td>
+          <input type="text" required placeholder="Frabe,Farbe,Farbe..." [(ngModel)]="COLORSnew" />
+        </td>
+        <td>
+          <input type="text" required placeholder="BIT,BIT,BIT..." [(ngModel)]="OPC_BITnew" />
         </td>
         <td>
           <button (click)="addAmpel(selectedID)">Hinzufügen</button>
@@ -93,7 +93,7 @@
       </tr>
     </table>
   </div>
-
+  <hr>
 
   <!-- Überprüfe, ob die Ampel-Daten erfolgreich geladen wurden -->
   <!-- Dieser Block wird nur angezeigt, wenn mindestens ein Ampel-Element in der Ampel-Liste vorhanden ist -->
@@ -102,16 +102,19 @@
       Ampeln bearbeiten:
       <table>
         <tr>
+          <th>ID</th>
           <th>x-Position</th>
           <th>y-Position</th>
-          <th>Size</th>
-          <th></th>
-          <th></th>
+          <th>Größe</th>
+          <th>Farben</th>
+          <th>OPC-Bits</th>
         </tr>
         <!-- Schleife durch die Ampel-Liste und zeige für jedes Element die Inhalte an -->
         <!-- *ngFor iteriert über jedes Ampel-Objekt und zeigt dessen Eigenschaften an -->
         <tr class="ampelEdit" *ngFor="let ampel of Ampeln">
-
+          <td>
+            {{ ampel.POS_X }}
+          </td>
           <td>
             <input [(ngModel)]="ampel.POS_X" type="number" required palceholder="X-Position in %" value="{{ ampel.POS_X }}" />
           </td>
@@ -119,12 +122,18 @@
             <input [(ngModel)]="ampel.POS_Y" type="number" required palceholder="Y-Position in %" value="{{ ampel.POS_Y }}" />
           </td>
           <td>
-            <input [(ngModel)]="ampel.SIZE" type="number" required palceholder="Größe in px" value="{{ ampel.SIZE }}" />
+            <input [(ngModel)]="ampel.SIZE" type="number" required palceholder="Größe in %" value="{{ ampel.SIZE }}" />
+          </td>
           <td>
+            <input [(ngModel)]="ampel.COLORS" type="text" required placeholder="Frabe,Farbe,Farbe..." value="{{ ampel.COLORS }}" />
+          </td>
+          <td>
+            <input [(ngModel)]="ampel.OPC_BIT" type="text" required placeholder="BIT,BIT,BIT..." value="{{ ampel.OPC_BIT }}" />
+          </td>
 
             <!-- Buttons für Update und Löschen -->
           <td>
-            <button (click)="updateAmpel(ampel.ID)">Update</button>
+            <button (click)="updateAmpel(ampel.ID, ampel)">Update</button>
           </td>
           <td>
             <button (click)="deleteAmpel(ampel.ID)">Löschen</button>
@@ -139,10 +148,6 @@
   <ng-template #noDataAmpel>
     <p>Keine Ampeln gefunden.</p>
   </ng-template>
-
-
-
-
 
 
 </div>

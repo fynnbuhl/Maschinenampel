@@ -11,5 +11,5 @@
 
 INSERT INTO AmpelDB (DASHBOARD_ID, POS_X, POS_Y, SIZE, ColorCount, COLORS, OPC_BIT)
 VALUES
-    (1, 1, 20, 5, 3, '["rot", "gelb", "grün"]', '["1", "0", "0"]'),
-    (2, 1, 40, 5, 2, '["blau", "weiß"]', '["0", "1"]');
+    (1, 20, 20, 4, 3, 'green,red,blue', '["1", "0", "0"]'),
+    (2, 40, 40, 4, 2, 'blue,red', '["0", "1"]');

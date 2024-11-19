@@ -78,26 +78,34 @@ namespace Maschinenampel.Server.Controllers
 
 
 
+        public class DashboardModel
+        {
+            public string Name { get; set; }
+            public string IMG_PATH { get; set; }
+            public string aspectRatio { get; set; }
+        }
+
         // Asynchrone Methode zum Hinzufügen eines Dashboards
         [HttpPost] // HTTP POST-Anforderung
         [Route("addDashboard")] // Spezifische Route für diese Methode
-        public async Task<IActionResult> AddDashboardAsync([FromForm] string Name, [FromForm] string IMG_PATH)
+        public async Task<IActionResult> AddDashboardAsync([FromBody] DashboardModel model)
         {
-            // Überprüfen, ob die Eingabewerte leer sind
-            if (string.IsNullOrWhiteSpace(Name) || string.IsNullOrWhiteSpace(IMG_PATH))
+
+            if (model == null)
             {
-                return BadRequest(new { Message = "Name and IMG_PATH cannot be empty" }); // Gibt einen 400 Fehler zurück, wenn Eingaben fehlen
+                return BadRequest("Ungültige Eingabedaten");
             }
 
-            string query = "INSERT INTO DashboardDB (Name, IMG_PATH) VALUES(@Name, @IMG_PATH)"; // SQL-Abfrage zum Hinzufügen eines Dashboards
+            string query = "INSERT INTO DashboardDB (Name, IMG_PATH, aspectRatio) VALUES(@Name, @IMG_PATH, @aspectRatio)"; // SQL-Abfrage zum Hinzufügen eines Dashboards
 
             try
             {
                 // Parameter für die SQL-Abfrage erstellen
                 var parameters = new[]
                 {
-                    new SqlParameter("@Name", Name),
-                    new SqlParameter("@IMG_PATH", IMG_PATH)
+                    new SqlParameter("@Name", model.Name),
+                    new SqlParameter("@IMG_PATH", model.IMG_PATH),
+                    new SqlParameter("@aspectRatio", model.aspectRatio)
                 };
 
                 // Führt die SQL-Abfrage aus, die keine Rückgabewerte hat
@@ -112,11 +120,29 @@ namespace Maschinenampel.Server.Controllers
 
 
 
+
+
+        public class AmpelModel
+        {
+            public int Dashboard_ID { get; set; }
+            public int POS_X { get; set; }
+            public int POS_Y { get; set; }
+            public int SIZE { get; set; }
+            public int ColorCount { get; set; }
+            public string COLORS { get; set; }
+            public string OPC_BIT { get; set; }
+        }
+
         // Asynchrone Methode zum Hinzufügen einer Ampel
         [HttpPost] // HTTP POST-Anforderung
         [Route("addAmpel")] // Spezifische Route für diese Methode
-        public async Task<IActionResult> AddAmpelAsync([FromQuery] int Dashboard_ID, [FromForm] int POS_X, [FromForm] int POS_Y, [FromForm] int SIZE, [FromForm] int ColorCount, [FromForm] string COLORS, [FromForm] string OPC_BIT)
+        public async Task<IActionResult> AddAmpelAsync([FromBody] AmpelModel model)
         {
+
+            if (model == null)
+            {
+                return BadRequest("Ungültige Eingabedaten");
+            }
 
             string query = "INSERT INTO AmpelDB (DASHBOARD_ID, POS_X, POS_Y, SIZE, ColorCount, COLORS, OPC_BIT) VALUES(@DASHBOARD_ID, @POS_X, @POS_Y, @SIZE, @ColorCount, @COLORS, @OPC_BIT)"; // SQL-Abfrage zum Hinzufügen eines Dashboards
 
@@ -125,13 +151,13 @@ namespace Maschinenampel.Server.Controllers
                 // Parameter für die SQL-Abfrage erstellen
                 var parameters = new[]
                 {
-                    new SqlParameter("@Dashboard_ID", Dashboard_ID),
-                    new SqlParameter("@POS_X", POS_X),
-                    new SqlParameter("@POS_Y", POS_Y),
-                    new SqlParameter("@SIZE", SIZE),
-                    new SqlParameter("@ColorCount", ColorCount),
-                    new SqlParameter("@COLORS", COLORS),
-                    new SqlParameter("@OPC_BIT", OPC_BIT)
+                    new SqlParameter("@Dashboard_ID", model.Dashboard_ID),
+                    new SqlParameter("@POS_X", model.POS_X),
+                    new SqlParameter("@POS_Y", model.POS_Y),
+                    new SqlParameter("@SIZE", model.SIZE),
+                    new SqlParameter("@ColorCount", model.ColorCount),
+                    new SqlParameter("@COLORS", model.COLORS),
+                    new SqlParameter("@OPC_BIT", model.OPC_BIT)
                 };
 
                  // Führt die SQL-Abfrage aus, die keine Rückgabewerte hat
@@ -151,11 +177,15 @@ namespace Maschinenampel.Server.Controllers
 
 
 
+        public class DashboardUpdateModel
+        {
+            public string NewName { get; set; }
+        }
 
         // Asynchrone Methode zum Aktualisieren des Dashboard-Namens
         [HttpPost]
         [Route("updateDashboardName")] // Spezifische Route für diese Methode
-        public async Task<IActionResult> UpdateDashboardNameAsync([FromQuery] int ID, [FromForm] string NewName)
+        public async Task<IActionResult> UpdateDashboardNameAsync([FromQuery] int ID, [FromBody] DashboardUpdateModel model)
         {
 
             string query = "UPDATE DashboardDB SET Name = @NewName WHERE ID = @ID"; // SQL-Abfrage zum Aktualisieren des Dashboard-Namens
@@ -166,7 +196,7 @@ namespace Maschinenampel.Server.Controllers
                 var parameters = new[]
                 {
                     new SqlParameter("@ID", ID),
-                    new SqlParameter("@NewName", NewName)
+                    new SqlParameter("@NewName", model.NewName)
                 };
 
                 // Führt die SQL-Abfrage aus und gibt die Anzahl der betroffenen Zeilen zurück
@@ -189,11 +219,17 @@ namespace Maschinenampel.Server.Controllers
 
 
 
+
+
         // Asynchrone Methode zum aktualisieren einer Ampel
         [HttpPost] // HTTP POST-Anforderung
         [Route("updateAmpel")] // Spezifische Route für diese Methode
-        public async Task<IActionResult> updateAmpelAsync([FromQuery] int ID, [FromForm] int Dashboard_ID, [FromForm] int POS_X, [FromForm] int POS_Y, [FromForm] int SIZE, [FromForm] int ColorCount, [FromForm] string COLORS, [FromForm] string OPC_BIT)
+        public async Task<IActionResult> UpdateAmpelAsync([FromBody] AmpelModel model)
         {
+            if (model == null)
+            {
+                return BadRequest("Ungültige Eingabedaten");
+            }
 
             // SQL-Abfrage zum Aktualisieren der Ampel-Einträge
             string query = @"UPDATE AmpelDB 
@@ -203,21 +239,20 @@ namespace Maschinenampel.Server.Controllers
                          ColorCount = @ColorCount, 
                          COLORS = @COLORS, 
                          OPC_BIT = @OPC_BIT 
-                     WHERE ID = @ID";
+                     WHERE ID = @Dashboard_ID";
 
             try
             {
                 // Parameter für die SQL-Abfrage erstellen
                 var parameters = new[]
                 {
-                    new SqlParameter("@ID", ID),
-                    new SqlParameter("@Dashboard_ID", Dashboard_ID),
-                    new SqlParameter("@POS_X", POS_X),
-                    new SqlParameter("@POS_Y", POS_Y),
-                    new SqlParameter("@SIZE", SIZE),
-                    new SqlParameter("@ColorCount", ColorCount),
-                    new SqlParameter("@COLORS", COLORS),
-                    new SqlParameter("@OPC_BIT", OPC_BIT)
+                    new SqlParameter("@Dashboard_ID", model.Dashboard_ID),
+                    new SqlParameter("@POS_X", model.POS_X),
+                    new SqlParameter("@POS_Y", model.POS_Y),
+                    new SqlParameter("@SIZE", model.SIZE),
+                    new SqlParameter("@ColorCount", model.ColorCount),
+                    new SqlParameter("@COLORS", model.COLORS),
+                    new SqlParameter("@OPC_BIT", model.OPC_BIT)
                 };
 
                 // Führt die SQL-Abfrage aus und gibt die Anzahl der betroffenen Zeilen zurück

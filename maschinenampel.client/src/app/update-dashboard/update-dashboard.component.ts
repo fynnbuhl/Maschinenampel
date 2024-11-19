@@ -15,9 +15,18 @@ export class UpdateDashboardComponent implements OnInit {
   selectedNAME: string = "";
   selectedIMG: string = "";
 
-  POS_X = "";
-  POS_Y = "";
-  SIZE = "";
+  POS_Xnew = 0;
+  POS_Ynew = 0;
+  SIZEnew = 4;
+  ColorCountnew = 1;
+  COLORSnew = "";
+  OPC_BITnew = "";
+  colorArraynew: string[] = [];
+  BitArraynew: string[] = [];
+
+  ColorCount = 1;
+  colorArray: string[] = [];
+  BitArray: string[] = [];
 
   // Ein Array, in dem die abgerufenen Dashboards/Ampeln gespeichert werden
   Dashboards: any[] = [];
@@ -62,6 +71,10 @@ export class UpdateDashboardComponent implements OnInit {
   }
 
 
+
+
+
+
   // Methode zum Abrufen der Ampel-Daten von der API
   getAmpelnVonBoard() {
     // Mit HttpClient wird eine GET-Anfrage an die API gesendet, um die Ampel-Daten zu erhalten
@@ -72,17 +85,129 @@ export class UpdateDashboardComponent implements OnInit {
       });
   }
 
+
+
+
+
   async addAmpel(Board_ID: number) {
+    // Debugging: Zeige die ID des Dashboards an, in dem die Ampel hinzugefügt wird
     console.log("Board_ID:" + Board_ID);
 
+    // Farben in ein Array umwandeln, indem der String nach Kommas getrennt wird
+    this.colorArraynew = this.COLORSnew.trim().split(',').filter(color => color.trim().length > 0);
 
+    // Bestimme die Anzahl der Farben im Array
+    this.ColorCountnew = this.colorArraynew.length;
+
+    // OPC-Bits in ein Array umwandeln, ähnlich wie bei den Farben
+    this.BitArraynew = this.OPC_BITnew.trim().split(',').filter(bit => bit.trim().length > 0);
+
+    // Validierung der Nutzereingabe: Überprüfe, ob die Anzahl der Farben mit der Anzahl der OPC-Bits übereinstimmt
+    if (this.ColorCountnew != this.BitArraynew.length) {
+      console.log("Colors/OPC-Bits: Anzahl stimmt nicht überein!");
+      // Zeige dem Benutzer eine verständliche Fehlermeldung an und brich die Methode ab
+      alert("Anzahl der Farben stimmt nicht mit der Anzahl an OPC-Bits überein. Bitte Werte prüfen!");
+      return;
+    }
+
+    try {
+      // Erstelle das JSON-Objekt, das an den Server gesendet wird
+      const body = {
+        Dashboard_ID: Board_ID,                 // ID des Dashboards, zu dem die Ampel gehört
+        POS_X: this.POS_Xnew,                   // X-Position der Ampel im Dashboard
+        POS_Y: this.POS_Ynew,                   // Y-Position der Ampel im Dashboard
+        SIZE: this.SIZEnew,                     // Größe der Ampel
+        ColorCount: this.ColorCountnew,         // Anzahl der Farben
+        COLORS: this.colorArraynew.join(','),   // Farben als kommagetrennter String
+        OPC_BIT: this.BitArraynew.join(',')     // OPC-Bits als kommagetrennter String
+      };
+
+      // Debugging: Zeige die zu sendenden Daten an
+      console.log(body);
+
+      // Sende eine POST-Anfrage an die API mit dem erstellten JSON-Objekt
+      const response = await this.http.post(this.apiConfig.DB_APIUrl + "addAmpel", body).toPromise();
+
+      // Erfolgreiche Antwort: Zurücksetzen der Eingabewerte auf Standardwerte
+      this.POS_Xnew = 0;        // Standardwert für die X-Position
+      this.POS_Ynew = 0;        // Standardwert für die Y-Position
+      this.SIZEnew = 4;         // Standardgröße der Ampel
+      this.ColorCountnew = 1;   // Standardanzahl der Farben
+      this.COLORSnew = "";      // Leere Eingabe für Farben
+      this.OPC_BITnew = "";     // Leere Eingabe für OPC-Bits
+
+      // Debugging: Zeige die erfolgreiche Speicherung an
+      console.log("Ampel erfolgreich gespeichert:", response);
+    } catch (error) {
+      // Fehlerbehandlung: Zeige eine Fehlermeldung im Fehlerfall
+      console.error("Fehler beim Speichern der Ampel", error);
+      alert("Fehler beim Speichern der Ampel. Bitte versuche es erneut.");
+    }
+
+    // Aktualisiere die Liste der Ampeln im Dashboard, um die neue Ampel anzuzeigen
     await this.getAmpelnVonBoard();
   }
 
-  updateAmpel(ID: number) {
-    console.log("Update ID:" + ID);
-    
+
+
+
+
+
+  async updateAmpel(Ampel_ID: number, ampel: any) {
+    // Debugging: Zeige die ID der zu aktualisierenden Ampel an
+    console.log("Update ID:" + Ampel_ID);
+
+    // Farben in ein Array umwandeln, indem der String nach Kommas getrennt wird
+    this.colorArray = ampel.COLORS.trim().split(',');
+
+    // Bestimme die Anzahl der Farben im Array
+    this.ColorCount = this.colorArray.length;
+
+    // OPC-Bits ebenfalls in ein Array umwandeln, ähnlich wie bei den Farben
+    this.BitArray = ampel.OPC_BIT.trim().split(',');
+
+    // Validierung der Nutzereingabe: Überprüfe, ob die Anzahl der Farben mit der Anzahl der OPC-Bits übereinstimmt
+    if (this.ColorCount != this.BitArray.length) {
+      console.log("Colors/OPC-Bits: Anzahl stimmt nicht überein!");
+      // Zeige dem Benutzer eine verständliche Fehlermeldung an und brich die Methode ab
+      alert("Anzahl der Farben stimmt nicht mit der Anzahl an OPC-Bits überein. Bitte Werte prüfen!");
+      return;
+    }
+
+    try {
+      // Erstelle das JSON-Objekt mit den aktualisierten Werten der Ampel
+      const updatedAmpel = {
+        Dashboard_ID: Ampel_ID,            // ID des Dashboards, zu dem die Ampel gehört
+        POS_X: ampel.POS_X,                // Aktualisierte X-Position der Ampel
+        POS_Y: ampel.POS_Y,                // Aktualisierte Y-Position der Ampel
+        SIZE: ampel.SIZE,                  // Aktualisierte Größe der Ampel
+        ColorCount: this.ColorCount,       // Anzahl der Farben
+        COLORS: this.colorArray.join(','), // Farben als kommagetrennter String
+        OPC_BIT: this.BitArray.join(',')   // OPC-Bits als kommagetrennter String
+      };
+
+      // Debugging: Zeige das zu sendende Objekt an
+      console.log(updatedAmpel);
+
+      // Sende eine POST-Anfrage an die API, um die Ampel zu aktualisieren
+      const response = await this.http.post(this.apiConfig.DB_APIUrl + "updateAmpel", updatedAmpel).toPromise();
+
+      // Erfolgreiche Antwort: Setze die Zählvariable zurück
+      this.ColorCount = 1;
+
+      // Debugging: Zeige die erfolgreiche Aktualisierung an
+      console.log("Ampel erfolgreich gespeichert:", response);
+    } catch (error) {
+      // Fehlerbehandlung: Zeige eine Fehlermeldung im Fehlerfall
+      console.error("Fehler beim Speichern der Ampel", error);
+      alert("Fehler beim Speichern der Ampel. Bitte versuche es erneut.");
+    }
+
+    // Aktualisiere die Liste der Ampeln im Dashboard, um die Änderungen anzuzeigen
+    await this.getAmpelnVonBoard();
   }
+
+
 
   async deleteAmpel(ID: number) {
     console.log("Lösche ampel mit ID:" + ID);
@@ -97,15 +222,17 @@ export class UpdateDashboardComponent implements OnInit {
     }
   }
 
+
+
+
+
+
   updateBoard(ID: number) {
     console.log("Update ID:" + ID);
 
-    // Ein neues FormData-Objekt wird erstellt, um die Daten zu verpacken,
-    // die an den Server gesendet werden
-    let bodyBoards = new FormData();
-
-    // Füge die Daten dem FormData-Objekt hinzu
-    bodyBoards.append('NewName', this.selectedNAME);
+    const bodyBoards = {
+      NewName: this.selectedNAME // Einfacher JSON-Body
+    };
 
     console.log(this.selectedNAME);
 
@@ -125,6 +252,8 @@ export class UpdateDashboardComponent implements OnInit {
       );
 
   }
+
+
 
   async deleteBoard(ID: number) {
     console.log("Lösche ID:" + ID);

@@ -1,37 +1,30 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.IO;
-using System.Threading.Tasks;
-using System;
+using SixLabors.ImageSharp;
+
 
 namespace Maschinenampel.Server.Controllers
 {
     [ApiController]
-    [Route("api/imgUpload")] // Legt die Basisroute für die Endpunkte in diesem Controller fest
+    [Route("api/imgUpload")]
     public class UploadController : ControllerBase
     {
-        // Der Pfad, in dem die hochgeladenen Dateien gespeichert werden
         private readonly string _uploadPath = "./wwwroot/images";
 
-        // Konstruktor des Controllers
         public UploadController()
         {
-            // Überprüft, ob das Verzeichnis existiert. Falls nicht, wird es erstellt.
             if (!Directory.Exists(_uploadPath))
             {
                 Directory.CreateDirectory(_uploadPath);
             }
         }
 
-        // HTTP POST-Endpunkt für den Datei-Upload
         [HttpPost]
-
-        [Route("upload")] // Legt die spezifische Route für diesen Endpunkt fest: api/imgUpload/upload
+        [Route("upload")]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            // Überprüft, ob eine Datei hochgeladen wurde und ob sie Daten enthält
             if (file == null || file.Length == 0)
             {
-                return BadRequest("Kein gültiges Bild hochgeladen."); // Fehlerantwort mit HTTP-Status 400
+                return BadRequest("Kein gültiges Bild hochgeladen.");
             }
 
             try
@@ -39,18 +32,10 @@ namespace Maschinenampel.Server.Controllers
                 // **Dateinamen mit Zeitstempel erstellen um Duplikate zu verhindern**
                 // Aktuelle Uhrzeit und Datum als eindeutiger Zeitstempel im Format yyyyMMddHHmmss
                 var timeStamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-
-                // Extrahiert die Dateiendung, z. B. ".jpg"
-                var fileExtension = Path.GetExtension(file.FileName);
-
-                // Extrahiert den Dateinamen ohne die Endung
-                var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
-
-                // Erstellt den neuen Dateinamen mit Zeitstempel
-                var newFileName = $"{fileNameWithoutExt}_{timeStamp}{fileExtension}";
-
-                // Kombiniert den Speicherpfad mit dem neuen Dateinamen
-                var filePath = Path.Combine(_uploadPath, newFileName);
+                var fileExtension = Path.GetExtension(file.FileName);// Extrahiert die Dateiendung, z. B. ".jpg"
+                var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);// Extrahiert den Dateinamen ohne die Endung
+                var newFileName = $"{fileNameWithoutExt}_{timeStamp}{fileExtension}";// Erstellt den neuen Dateinamen mit Zeitstempel
+                var filePath = Path.Combine(_uploadPath, newFileName);// Kombiniert den Speicherpfad mit dem neuen Dateinamen
 
                 // **Datei speichern**
                 // Öffnet einen Stream zum Erstellen der Datei am definierten Speicherort
@@ -60,14 +45,22 @@ namespace Maschinenampel.Server.Controllers
                     await file.CopyToAsync(stream);
                 }
 
-                // **Antwort mit dem neuen Dateinamen zurückgeben**
-                // Gibt den Dateipfad als URL zurück (JSON-Objekt mit der Eigenschaft "URL")
-                return Ok(new { URL = filePath.Substring(9) }); //entferne ./wwwroot aus der URL
+                // **Bildgröße auslesen mit ImageSharp**
+                using var image = await Image.LoadAsync(filePath); // Bild laden
+                int width = image.Width;
+                int height = image.Height;
+                float aspectRatio = (float)width / height; // Seitenverhältnis berechnen
+
+                // **Antwort mit zusätzlichen Informationen zurückgeben**
+                return Ok(new
+                {
+                    URL = filePath.Substring(9), // Entfernt ./wwwroot aus der URL
+                    aspectRatio = Math.Round(aspectRatio, 4)
+                });
             }
-            catch (Exception ex) // Fängt alle möglichen Fehler während des Upload-Prozesses ab
+            catch (Exception ex)
             {
-                // Gibt eine Fehlerantwort zurück, falls eine Ausnahme auftritt
-                return BadRequest(ex.Message); // HTTP-Status 400 mit der Fehlermeldung
+                return BadRequest(ex.Message);
             }
         }
     }

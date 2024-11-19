@@ -1,8 +1,6 @@
 ﻿//https://youtu.be/9ZD7cKIaxdM Video Tutorial
 
 using Microsoft.AspNetCore.Mvc; // Namespace für ASP.NET Core MVC
-using Microsoft.Data.SqlClient; // Namespace für SQL Server-Datenbankzugriffe
-using System.Data; // Namespace für DataTable und andere Datenstrukturen
 
 namespace Maschinenampel.Server.Controllers
 {
@@ -12,24 +10,20 @@ namespace Maschinenampel.Server.Controllers
     [RequireHttps]
     public class OPC_Controller : ControllerBase
     {
-        // Eine einfache Testmethode, die einen Statuscode und eine Nachricht zurückgibt
-        [HttpGet]
-        [Route("test")] // Definiert die Route für diese Methode: api/OPCController/test
-        public IActionResult TestMethod()
+
+        [HttpPost]
+        [Route("getBITs")]
+        public IActionResult getBits([FromBody] string[][] OPC_NameArray)
         {
-            // Gibt einen OK-Status (200) und eine einfache Nachricht zurück
-            return Ok(new { message = "OPC Controller ist funktionsfähig!" });
+            //TODO: NameArray an OPC-Controller geben und BIT Array zurück erhalten
+            string[][] OPC_BITArray = new string[][]
+            {
+                new string[] { "1", "0"},
+                new string[] { "0", "1", "0" }
+            };
+
+            // Gib das empfangene Array zurück
+            return Ok(OPC_NameArray);
         }
-
-
-
-
-
-
-
-
-
-
-
     }
 }

@@ -27,7 +27,10 @@ export class AddDashboardComponent implements OnInit {
 
   // Properties für die Werte des neuen Dashboards
   newBoard = ""; // Name des neuen Dashboards
-  IMG_PATH = ""; // Pfad oder URL des Bildes für das Dashboard#
+  IMG_PATH = ""; // Pfad oder URL des Bildes für das Dashboard
+  aspectRatio = ""; //aspectRatio vom Bild
+
+  loading: boolean = false; // Variable für den Ladezustand
   
   // Der Konstruktor injiziert HttpClient, um HTTP-Anfragen zu senden
   constructor(private http: HttpClient, public router: Router, private apiConfig: ApiConfigService) { }
@@ -36,26 +39,45 @@ export class AddDashboardComponent implements OnInit {
 
 
 
-  // Methode, um ein neues "Board" hinzuzufügen
+  // Methode zum Hinzufügen eines neuen "Boards"
+  // Die Methode ist asynchron, da sie auf den Abschluss von Dateiuploads und Datenbankoperationen wartet.
   async add_board() {
     try {
-      // Warten, bis die Datei hochgeladen wurde, und die URL speichern
-      this.IMG_PATH = await this.uploadFile();
-      this.IMG_PATH = this.IMG_PATH.replace(/\\/g, '/'); // Ersetze Rückwärtsschrägstriche durch Schrägstriche
-      console.log(this.IMG_PATH); // Ausgabe der hochgeladenen URL zur Überprüfung
+      // Aktiviert den Lade-Indikator (z.B. Spinner oder ähnliches), um dem Benutzer zu zeigen, dass der Vorgang läuft
+      this.loading = true;
 
-      // Speichere die neuen Daten in der Datenbank
+      // Wartet auf den Abschluss des Datei-Uploads und speichert den Pfad der hochgeladenen Datei in der Variable 'IMG_PATH'
+      // Die 'uploadFile()'-Methode wird vermutlich die Datei hochladen und die URL des hochgeladenen Bildes zurückgeben
+      this.IMG_PATH = await this.uploadFile();
+
+      // Ersetzt alle Rückwärtsschrägstriche ('\') durch Schrägstriche ('/'), um sicherzustellen, dass der Pfad mit dem üblichen
+      // Web-Pfadformat übereinstimmt (z.B. für URLs oder Dateisysteme, die Schrägstriche verwenden)
+      this.IMG_PATH = this.IMG_PATH.replace(/\\/g, '/');
+
+      // Ausgabe des Pfades des hochgeladenen Bildes zur Überprüfung
+      //console.log(this.IMG_PATH);
+
+      // Ruft die Methode 'saveToDB()' auf, die die neuen Daten (inklusive des Bildpfads) in der Datenbank speichert
       await this.saveToDB();
-      await window.location.reload(); //Komponente neu laden
+
+      // Nach erfolgreichem Speichern wird die Seite neu geladen, um die Änderungen anzuzeigen
+      await window.location.reload();
+
+      // Ausgabe in der Konsole, dass das neue Board erfolgreich hinzugefügt wurde
       console.log("Neues Board erfolgreich hinzugefügt.");
 
-      // Benutzerfeedback: Bestätigung, dass das Board erfolgreich gespeichert wurde
+      // Deaktiviert den Lade-Indikator, da der Vorgang abgeschlossen ist
+      this.loading = false;
+
+      // Zeigt dem Benutzer eine Bestätigung an, dass das Dashboard erfolgreich gespeichert wurde
       alert("Neues Dashboard erfolgreich gespeichert.");
+
     } catch (error) {
-      // Fehlerbehandlung: Ausgabe einer Fehlermeldung in der Konsole
+      // Fehlerbehandlung: Wenn ein Fehler auftritt, wird eine Fehlermeldung in der Konsole ausgegeben
       console.error("Fehler beim Hochladen oder Speichern:", error);
     }
   }
+
 
 
 
@@ -73,33 +95,44 @@ export class AddDashboardComponent implements OnInit {
   }
 
   // Methode, die den Upload-Prozess ausführt und die URL der hochgeladenen Datei zurückgibt
+  // Die Methode gibt ein Promise zurück, das entweder die URL der hochgeladenen Datei oder eine Fehlermeldung liefert.
   uploadFile(): Promise<string> {
     return new Promise((resolve, reject) => {
       // Überprüfen, ob eine Datei ausgewählt wurde
+      // Falls keine Datei ausgewählt wurde, wird der Benutzer darauf hingewiesen und das Promise wird mit einem Fehler abgelehnt
       if (!this.selectedFile) {
-        this.uploadResponse = "Bitte wählen Sie eine Datei aus."; // Feedback an den Benutzer
-        reject("Keine Datei ausgewählt"); // Promise wird mit Fehler abgelehnt
-        return;
+        this.uploadResponse = "Bitte wählen Sie eine Datei aus."; // Feedback an den Benutzer, dass keine Datei ausgewählt wurde
+        reject("Keine Datei ausgewählt"); // Promise wird mit einem Fehler abgelehnt, weil keine Datei vorhanden ist
+        return; // Früher Abbruch der Methode, wenn keine Datei ausgewählt wurde
       }
 
-      // Datei an den Server senden
+      // Wenn eine Datei ausgewählt wurde, wird der Upload-Prozess fortgesetzt.
+      // Die Methode 'uploadFileToServer()' wird aufgerufen, um die Datei an den Server zu senden.
+      // Sie gibt ein Observable zurück, auf das mit der Methode 'subscribe' reagiert wird.
       this.uploadFileToServer(this.selectedFile).subscribe({
         next: (response) => {
-          // Wenn der Server eine gültige URL zurückgibt
-          if (response.URL) {
-            resolve(response.URL); // Promise mit der URL auflösen
+          // Die 'response' enthält die Informationen über den Upload: die URL der hochgeladenen Datei und das Seitenverhältnis.
+          this.aspectRatio = response.aspectRatio; // Speichern des Seitenverhältnisses des hochgeladenen Bildes zur späteren Verwendung
+
+          // Überprüfen, ob die Antwort des Servers eine gültige URL und ein Seitenverhältnis enthält.
+          // Falls beide vorhanden sind, wird die URL als Ergebnis zurückgegeben.
+          if (response.URL && response.aspectRatio) {
+            resolve(response.URL); // Wenn eine gültige URL zurückgegeben wird, löst das Promise die URL auf.
           } else {
-            reject("Keine gültige URL in der Antwort"); // Promise mit Fehler ablehnen
+            // Wenn die Antwort keine gültige URL oder kein Seitenverhältnis enthält, wird das Promise mit einem Fehler abgelehnt.
+            reject("Keine gültige URL in der Antwort"); // Fehlerhafte Antwort des Servers
           }
         },
         error: () => {
-          // Fehler beim Hochladen
-          this.uploadResponse = "Fehler beim Hochladen der Datei.";
-          reject("Upload fehlgeschlagen"); // Promise mit Fehler ablehnen
+          // Falls beim Hochladen der Datei ein Fehler auftritt, wird diese Fehlerbehandlung aktiviert.
+          // Hier kann es zu Fehlern kommen, z.B. durch Netzwerkprobleme oder Serverfehler.
+          this.uploadResponse = "Fehler beim Hochladen der Datei."; // Benutzerfreundliche Fehlermeldung
+          reject("Upload fehlgeschlagen"); // Das Promise wird mit einem Fehler abgelehnt, der den Upload-Prozess beschreibt
         }
       });
     });
   }
+
 
   // Private Methode, um die Datei an den Server zu senden
   private uploadFileToServer(file: File): Observable<any> {
@@ -117,14 +150,12 @@ export class AddDashboardComponent implements OnInit {
   // Methode zum Speichern eines neuen Dashboards in der Datenbank
   saveToDB() {
 
-    // Ein neues FormData-Objekt wird erstellt, um die Daten zu verpacken,
-    // die an den Server gesendet werden
-    let bodyBoards = new FormData();
-
-    // Füge die Daten dem FormData-Objekt hinzu, indem der Name und der IMG_PATH
-    // des neuen Dashboards übergeben werden
-    bodyBoards.append('Name', this.newBoard);
-    bodyBoards.append('IMG_PATH', this.IMG_PATH);
+    // Erstelle das Objekt mit den zu sendenden Daten
+    const bodyBoards = {
+      Name: this.newBoard,
+      IMG_PATH: this.IMG_PATH,
+      aspectRatio: this.aspectRatio
+    };
 
     // Sende eine POST-Anfrage an die API, um das neue Dashboard zu erstellen
     this.http.post(this.apiConfig.DB_APIUrl + "addDashboard", bodyBoards)
@@ -133,6 +164,7 @@ export class AddDashboardComponent implements OnInit {
           // Bei erfolgreicher Antwort:
           this.newBoard = ""; // Setze das Eingabefeld für den Namen zurück
           this.IMG_PATH = ""; // Setze das Eingabefeld für den IMG_PATH zurück
+          this.aspectRatio = ""; // Setze das Eingabefeld für die aspectRatio zurück
         },
         (error) => {
           // Fehlerbehandlung: Zeige eine Fehlermeldung, falls die Anfrage fehlschlägt

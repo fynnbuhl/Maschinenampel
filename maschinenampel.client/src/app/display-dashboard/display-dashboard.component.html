@@ -1,70 +1,99 @@
 <router-outlet></router-outlet>
 
+<!-- Dieser Block wird angezeigt, wenn selectedID gleich 0 ist -->
 <div *ngIf="selectedID === 0">
-
+  <!-- Menü-Button: Benutzer wird zum Hauptmenü zurückgeführt -->
   <button routerLink="/">Menü</button>
-  <!-- Dieser Block wird angezeigt, wenn selectedID gleich 0 ist: Kein Board ausgewählt -->
-  <p>Bitte Dashboard ausgewählen:</p>
 
+  <!-- Dieser Block wird angezeigt, wenn selectedID gleich 0 ist: Kein Dashboard ausgewählt -->
+  <p>Bitte Dashboard zum Anzeigen auswählen:</p>
+
+  <!-- Überprüfen, ob Dashboards geladen wurden (Dashboards.length > 0) -->
   <div *ngIf="Dashboards.length > 0; else noData">
-    <ul>
+    <div>
       <!-- Schleife durch die Dashboards-Liste und zeige nur die Namen an -->
-      <li *ngFor="let dashboard of Dashboards">
-        <!-- Anzeige des Dashboard-Namens -->
-        Name: {{ dashboard.NAME }}
-        <!-- Auswahl-Button, der beim Klicken die Methode viewBoard mit der ID + IMG des Dashboards aufruft -->
-        <button (click)="viewBoard(dashboard.ID, dashboard.NAME, dashboard.IMG_PATH)">Auswählen</button>
-      </li>
-    </ul>
+      <div *ngFor="let dashboard of Dashboards">
+        <!-- Auswahl-Button für jedes Dashboard:
+             Beim Klicken wird die Methode 'viewBoard' mit den ID, NAME, IMG_PATH und aspectRatio des Dashboards aufgerufen -->
+        <button (click)="viewBoard(dashboard.ID, dashboard.NAME, dashboard.IMG_PATH, dashboard.aspectRatio)">
+          {{ dashboard.NAME }} Auswählen
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Fallback-Nachricht: Falls keine Dashboards-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
-  <!-- Das #noData-Template wird verwendet, wenn Dashboards leer ist -->
+  <!-- Fallback-Nachricht: Falls keine Dashboards-Daten vorhanden sind, wird dieser Inhalt angezeigt -->
+  <!-- Das #noData-Template wird verwendet, wenn Dashboards leer sind -->
   <ng-template #noData>
     <p>Keine Dashboards gefunden.</p>
   </ng-template>
-
 </div>
 
 
 
 
+
+
+
+
+
+
+<!-- Dieser Block wird angezeigt, wenn selectedID größer als 0 ist: Ein Board wurde ausgewählt -->
 <div *ngIf="selectedID > 0">
-  <!-- Dieser Block wird angezeigt, wenn selectedID größer als 0 ist: Board ausgewählt mit selectedID=ID -->
+  <!-- Menü- und Ansicht wechseln-Buttons -->
   <div class="menu">
     <button routerLink="/">Menü</button>
-    <button (click)="clearID()">Auswahl aufheben</button>
-    Aktuelle Ansicht: Dashboard {{selectedNAME}} (ID={{ selectedID }})
+    <button (click)="clearID()">Ansicht wechseln</button>
+
+    <!-- Zeige den Namen des aktuell ausgewählten Dashboards -->
+    Aktuelle Ansicht: {{selectedNAME}}
   </div>
 
   <!-- Überprüfe, ob die Ampel-Daten erfolgreich geladen wurden -->
   <!-- Dieser Block wird nur angezeigt, wenn mindestens ein Ampel-Element in der Ampel-Liste vorhanden ist -->
   <div *ngIf="Ampeln.length > 0; else noDataAmpel">
-    <div class="ampel-container">
+    <div class="ampel-container" [style.aspect-ratio]="aspectRatio">
+      <!-- Hintergrundbild des Layouts -->
       <div class="background-container">
-        <img class="hallenlayout" src={{selectedIMG}} />
+        <!-- Anzeige des ausgewählten Hintergrundbildes -->
+        <img class="hallenlayout_img" src={{selectedIMG}} />
       </div>
 
-      <!-- Schleife durch die Ampel-Liste und zeige für jedes Element die Inhalte an -->
-      <!-- *ngFor iteriert über jedes Ampel-Objekt und zeigt dessen Eigenschaften an -->
-      <div *ngFor="let ampel of Ampeln" class="ampel" [ngStyle]="getElementStyles(ampel)">
-        ID: {{ ampel.ID }}, x: {{ ampel.POS_X }}, y: {{ ampel.POS_Y }}
+      <!-- Schleife durch die Ampel-Liste und zeige für jedes Element die Ampel an -->
+      <div *ngFor="let ampel of Ampeln; let ampIndex = index" class="ampel" [ngStyle]="getElementStyles(ampel)">
+        <!-- Iteriere über die Farben der jeweiligen Ampel -->
+        <!-- Die Ampel-Farben werden aus dem colorsArray gezogen -->
+        <div *ngFor="let color of colorsArray[ampIndex]; let i = index" class="circle-wrapper">
+          <!-- Zeichne den Kreis: Wenn der zugehörige Bit-Wert 1 ist, wird der Kreis in der jeweiligen Farbe angezeigt, andernfalls schwarz -->
+          <div class="circle"
+               [ngStyle]="{'background-color': OPC_BITArray[ampIndex][i] === 1 ? color : 'black'}">
+          </div>
+        </div>
+        <!-- Anzeige der Ampel-ID -->
+        ID:{{ampel.ID}}
       </div>
     </div>
   </div>
 
-  <br />
-  <!-- Fallback-Nachricht: Falls keine Ampel-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
-  <!-- Das #noDataAmpel-Template wird verwendet, wenn Ampeln leer ist -->
+
+
+
+
+
+  <!-- Fallback-Nachricht: Falls keine Ampel-Daten vorhanden sind, wird dieser Inhalt angezeigt -->
+  <!-- Das #noDataAmpel-Template wird verwendet, wenn keine Ampeln verfügbar sind -->
   <ng-template #noDataAmpel>
-    <div class="ampel-container" style="background-image: url('{{selectedIMG}}')">
-      <p class="noData">Keine Ampeln gefunden.</p>
+    <div class="ampel-container" [style.aspect-ratio]="aspectRatio">
+      <p class="noData">
+        Keine Ampeln gefunden. <br />
+        Ampeln können unter <a routerLink="/updateDashboard">Dashboard updaten</a> hinzugefügt werden!
+      </p>
+
+      <!-- Hintergrundbild des Layouts -->
+      <div class="background-container">
+        <!-- Anzeige des ausgewählten Hintergrundbildes -->
+        <img class="hallenlayout_img" src={{selectedIMG}} />
+      </div>
     </div>
   </ng-template>
-
-
-
-
-
-
 </div>
