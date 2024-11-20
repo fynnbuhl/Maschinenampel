@@ -1,7 +1,10 @@
 ﻿//https://youtu.be/9ZD7cKIaxdM Video Tutorial
 
 using Microsoft.AspNetCore.Mvc; // Namespace für ASP.NET Core MVC
+using Newtonsoft.Json;
 using System.Data;
+using System.Net.WebSockets;
+using System.Text;
 
 namespace Maschinenampel.Server.Controllers
 {
@@ -65,6 +68,99 @@ namespace Maschinenampel.Server.Controllers
             };
         }
 
+
+
+
+
+
+
+
+
+
+
+
+        // Diese Methode wird durch eine GET-Anfrage an 'api/websocket/connectWebSocket' aufgerufen.
+        // Sie stellt die WebSocket-Verbindung her.
+        [HttpGet("connectWebSocket")]
+        public async Task ConnectWebSocket()
+        {
+            // Überprüfen, ob die Anfrage eine WebSocket-Anfrage ist
+            if (HttpContext.WebSockets.IsWebSocketRequest)
+            {
+                // Akzeptiere die WebSocket-Verbindung
+                var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+
+                // Beginne mit der Handhabung der WebSocket-Verbindung
+                await HandleWebSocketAsync(webSocket);
+            }
+            else
+            {
+                // Wenn es keine WebSocket-Anfrage ist, sende den Statuscode 400 (Bad Request)
+                HttpContext.Response.StatusCode = 400;
+            }
+        }
+
+        // Diese Methode verarbeitet die WebSocket-Verbindung und sendet ständig aktualisierte Daten an den Client
+        private async Task HandleWebSocketAsync(WebSocket webSocket)
+        {
+            // Puffergröße für empfangene Daten (4 KB)
+            byte[] buffer = new byte[1024 * 4];
+
+            // Initialisiere das 2D-Array mit Beispieldaten
+            int[][] array = new int[][]
+            {
+                new int[] { 1, 1 },  // Erste Zeile des 2D-Arrays
+                new int[] { 0, 1, 1 } // Zweite Zeile des 2D-Arrays
+            };
+
+            // Solange die WebSocket-Verbindung offen ist, wird diese Schleife immer wieder ausgeführt
+            while (webSocket.State == WebSocketState.Open)
+            {
+
+                // Aktualisiere das Array mit neuen Werten
+                array = UpdateArray(array);
+
+                // Wandle das Array in einen JSON-String um, um es an den Client zu senden
+                string json = JsonConvert.SerializeObject(array);
+
+                // Wandle den JSON-String in Bytes um (weil WebSockets nur Binärdaten übertragen können)
+                var bytes = Encoding.UTF8.GetBytes(json);
+
+                // Sende die Bytes an den Client
+                await webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+
+                // Verzögerung von 2 Sekunden, bevor der Vorgang wiederholt wird
+                // Das ermöglicht es, dass der Client alle 2 Sekunden neue Daten empfängt
+                await Task.Delay(2000);
+            }
+        }
+
+        // Diese Methode wird verwendet, um das Array zufällig zu ändern
+        private int[][] UpdateArray(int[][] array)
+        {
+            // Erstelle eine Instanz des Random-Objekts, um Zufallszahlen zu generieren
+            var rand = new Random();
+
+            // Iteriere durch das 2D-Array
+            for (int i = 0; i < array.Length; i++)
+            {
+                // Iteriere durch jede Zeile des Arrays
+                for (int j = 0; j < array[i].Length; j++)
+                {
+                    // 50% Wahrscheinlichkeit, den Wert zu ändern
+                    // Wenn der Zufallswert 0 oder 1 ist, dann wird das aktuelle Element geändert
+                    if (rand.Next(2) == 0)
+                    {
+                        // Ändere den Wert von 1 auf 0 und von 0 auf 1
+                        // Dies erfolgt durch eine einfache Bedingung
+                        array[i][j] = array[i][j] == 1 ? 0 : 1;
+                    }
+                }
+            }
+
+            // Gebe das aktualisierte Array zurück
+            return array;
+        }
 
 
 

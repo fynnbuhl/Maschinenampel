@@ -2,7 +2,8 @@
 import { HttpClient } from '@angular/common/http'; // HttpClient wird verwendet, um HTTP-Anfragen zu machen
 import { Component, OnInit } from '@angular/core'; // Component und OnInit werden benötigt, um eine Angular-Komponente zu definieren
 import { Router } from '@angular/router'; // Router wird verwendet, um zwischen den Routen zu navigieren
-import { ApiConfigService } from '@service/API_Service'; // ApiConfigService verwaltet global die API-URLs für die Kommunikation mit der Backend-API
+import { ApiConfigService } from '@service/API-Key_Service'; // ApiConfigService verwaltet global die API-URLs für die Kommunikation mit der Backend-API
+import { WebSocketService } from '@service/websocket.service'; // Import des WebSocketService zur Echtzeit-Kommunikation mit dem Server
 import { lastValueFrom } from 'rxjs';
 
 // Deklaration der Komponente mit Metadaten
@@ -25,11 +26,13 @@ export class DisplayDashboardComponent implements OnInit {
   Ampeln: any[] = []; // Speichert die abgerufenen Ampeln
 
   // Der Konstruktor, der die Abhängigkeiten für diese Komponente injiziert
-  constructor(private http: HttpClient, public router: Router, private apiConfig: ApiConfigService) { }
+  constructor(private http: HttpClient, public router: Router, private apiConfig: ApiConfigService, private webSocketService: WebSocketService) { }
 
   ngOnInit() {
     // Lädt die Dashboards beim Start der Komponente
     this.refreshBoards();
+
+   
   }
 
 
@@ -54,7 +57,9 @@ export class DisplayDashboardComponent implements OnInit {
 
   // Methode, die aufgerufen wird, wenn der Benutzer ein Dashboard auswählt
   async viewBoard(ID: number, NAME: string, IMG_PATH: string, ratio: string) {
-    this.isLoading = true;
+
+    this.isLoading = true; //Lade Spinner aktivieren
+
     // Setze die Variablen für die ausgewählten Dashboard-Daten
     this.selectedID = ID;
     this.selectedNAME = NAME;
@@ -66,7 +71,20 @@ export class DisplayDashboardComponent implements OnInit {
     // Aktualisiere die Dashboards und lade die Ampeln für das ausgewählte Dashboard
     await this.refreshBoards();
     await this.getAmpelnVonBoard();
-    this.isLoading = false;
+
+
+    // WebSocket-Verbindung zum OPC-Controller herstellen
+    this.webSocketService.connect(this.apiConfig.OPC_APIUrl + 'connectWebSocket'); // Server-Adresse
+
+    // Die empfangene Nachricht (event.data) wird als JSON interpretiert und in ein 2D-Array number[][] umgewandelt
+    this.webSocketService.socket.onmessage = (event) => {
+      this.OPC_BITArray = JSON.parse(event.data);
+      console.log('Neuste OPC Daten:', this.OPC_BITArray)
+    };
+
+
+
+    this.isLoading = false; //Lade Spinner deaktivieren
   }
 
 
@@ -80,6 +98,9 @@ export class DisplayDashboardComponent implements OnInit {
     this.selectedNAME = "";
     this.selectedIMG = "";
     this.aspectRatio = "";
+
+    //Schließe Websocket Verbindung
+    this.webSocketService.closeConnection();
   }
 
 
@@ -123,7 +144,9 @@ export class DisplayDashboardComponent implements OnInit {
       alert("Fehler beim Abrufen der Ampeln. Bitte versuche es erneut.");
     }
 
+
     await this.updateColors();
+
     //console.log("colorsArray:", this.colorsArray);
     console.log("OPC_AddArray:", this.OPC_AddArray);
     console.log("OPC_BITArray:", this.OPC_BITArray);
@@ -176,4 +199,7 @@ export class DisplayDashboardComponent implements OnInit {
 
     return styles; // Rückgabe des berechneten Styles
   }
+
+
+
 }

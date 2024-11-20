@@ -2,7 +2,7 @@
 import { HttpClient } from '@angular/common/http'; // HttpClient wird verwendet, um HTTP-Anfragen zu machen
 import { Component, OnInit } from '@angular/core'; // Component und OnInit werden benötigt, um eine Angular-Komponente zu definieren
 import { Router } from '@angular/router'; // Router wird verwendet, um zur Navigation zwischen verschiedenen Routen zu ermöglichen
-import { ApiConfigService } from '@service/API_Service'; //ApiConfigService wird verwendet um die API-URLs global zu verwalten
+import { ApiConfigService } from '@service/API-Key_Service'; //ApiConfigService wird verwendet um die API-URLs global zu verwalten
 import { lastValueFrom } from 'rxjs';
 
 import { Observable } from 'rxjs'; // RxJS (Reactive Extensions for JavaScript) wird für asynchrone Operationen und reaktive Programmierung verwendet.
