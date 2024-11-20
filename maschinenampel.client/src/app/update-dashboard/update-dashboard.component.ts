@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http'; // HttpClient wird verwendet,
 import { Component, OnInit } from '@angular/core'; // Component und OnInit werden benötigt, um eine Angular-Komponente zu definieren
 import { Router } from '@angular/router'; // Router wird verwendet, um zur Navigation zwischen verschiedenen Routen zu ermöglichen
 import { ApiConfigService } from '@service/API_Service'; //ApiConfigService wird verwendet um die API-URLs global zu verwalten
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-update-dashboard',
@@ -18,13 +19,11 @@ export class UpdateDashboardComponent implements OnInit {
   POS_Xnew = 0;
   POS_Ynew = 0;
   SIZEnew = 4;
-  ColorCountnew = 1;
-  COLORSnew = "";
+  colorsNew: string[] = [];
   OPC_BITnew = "";
   colorArraynew: string[] = [];
   BitArraynew: string[] = [];
 
-  ColorCount = 1;
   colorArray: string[] = [];
   BitArray: string[] = [];
 
@@ -89,24 +88,27 @@ export class UpdateDashboardComponent implements OnInit {
 
 
 
+
+
   async addAmpel(Board_ID: number) {
     // Debugging: Zeige die ID des Dashboards an, in dem die Ampel hinzugefügt wird
     console.log("Board_ID:" + Board_ID);
-
-    // Farben in ein Array umwandeln, indem der String nach Kommas getrennt wird
-    this.colorArraynew = this.COLORSnew.trim().split(',').filter(color => color.trim().length > 0);
-
-    // Bestimme die Anzahl der Farben im Array
-    this.ColorCountnew = this.colorArraynew.length;
 
     // OPC-Bits in ein Array umwandeln, ähnlich wie bei den Farben
     this.BitArraynew = this.OPC_BITnew.trim().split(',').filter(bit => bit.trim().length > 0);
 
     // Validierung der Nutzereingabe: Überprüfe, ob die Anzahl der Farben mit der Anzahl der OPC-Bits übereinstimmt
-    if (this.ColorCountnew != this.BitArraynew.length) {
+    if (this.colorsNew.length != this.BitArraynew.length) {
       console.log("Colors/OPC-Bits: Anzahl stimmt nicht überein!");
       // Zeige dem Benutzer eine verständliche Fehlermeldung an und brich die Methode ab
       alert("Anzahl der Farben stimmt nicht mit der Anzahl an OPC-Bits überein. Bitte Werte prüfen!");
+      return;
+    }
+
+    if (this.colorsNew.length <= 0) {
+      console.log("Bitte mindestens eine Farbe hinzufügen!");
+      // Zeige dem Benutzer eine verständliche Fehlermeldung an und brich die Methode ab
+      alert("Bitte mindestens eine Farbe hinzufügen!");
       return;
     }
 
@@ -117,8 +119,8 @@ export class UpdateDashboardComponent implements OnInit {
         POS_X: this.POS_Xnew,                   // X-Position der Ampel im Dashboard
         POS_Y: this.POS_Ynew,                   // Y-Position der Ampel im Dashboard
         SIZE: this.SIZEnew,                     // Größe der Ampel
-        ColorCount: this.ColorCountnew,         // Anzahl der Farben
-        COLORS: this.colorArraynew.join(','),   // Farben als kommagetrennter String
+        ColorCount: this.colorsNew.length,
+        COLORS: this.colorsNew.join(','),
         OPC_BIT: this.BitArraynew.join(',')     // OPC-Bits als kommagetrennter String
       };
 
@@ -126,14 +128,16 @@ export class UpdateDashboardComponent implements OnInit {
       console.log(body);
 
       // Sende eine POST-Anfrage an die API mit dem erstellten JSON-Objekt
-      const response = await this.http.post(this.apiConfig.DB_APIUrl + "addAmpel", body).toPromise();
+      const response = await lastValueFrom(
+        this.http.post(this.apiConfig.DB_APIUrl + "addAmpel", body)
+      );
 
       // Erfolgreiche Antwort: Zurücksetzen der Eingabewerte auf Standardwerte
       this.POS_Xnew = 0;        // Standardwert für die X-Position
       this.POS_Ynew = 0;        // Standardwert für die Y-Position
       this.SIZEnew = 4;         // Standardgröße der Ampel
-      this.ColorCountnew = 1;   // Standardanzahl der Farben
-      this.COLORSnew = "";      // Leere Eingabe für Farben
+      this.colorsNew = [];      // Leere Eingabe für Farben
+      this.selectedColor = '#000000';
       this.OPC_BITnew = "";     // Leere Eingabe für OPC-Bits
 
       // Debugging: Zeige die erfolgreiche Speicherung an
@@ -149,6 +153,35 @@ export class UpdateDashboardComponent implements OnInit {
   }
 
 
+  //Funktionalität des ColorPicker-Inputs
+  selectedColor: string = '#000000'; // Standardfarbe
+  maxColors: number = 6;
+
+  addColor(): void {
+    if (this.colorsNew.length < this.maxColors) {
+      if (!this.colorsNew.includes(this.selectedColor)) {
+        this.colorsNew.push(this.selectedColor);
+      } else {
+        alert('Diese Farbe ist bereits hinzugefügt!');
+      }
+    }
+    console.log(this.colorsNew);
+  }
+
+  removeColor(index: number): void {
+    this.colorsNew.splice(index, 1);
+  }
+
+  openColorPicker(): void {
+    const colorPicker = document.getElementById('color-picker') as HTMLInputElement;
+    colorPicker.click(); // Öffnet das versteckte Farbauswahlfeld
+  }
+
+
+
+
+
+
 
 
 
@@ -158,19 +191,26 @@ export class UpdateDashboardComponent implements OnInit {
     console.log("Update ID:" + Ampel_ID);
 
     // Farben in ein Array umwandeln, indem der String nach Kommas getrennt wird
-    this.colorArray = ampel.COLORS.trim().split(',');
+    this.colorArray = ampel.COLORS.trim().split(',').filter((item: string) => item !== '');
 
-    // Bestimme die Anzahl der Farben im Array
-    this.ColorCount = this.colorArray.length;
+    console.log(this.colorArray);
+    console.log(this.colorArray.length);
 
     // OPC-Bits ebenfalls in ein Array umwandeln, ähnlich wie bei den Farben
-    this.BitArray = ampel.OPC_BIT.trim().split(',');
+    this.BitArray = ampel.OPC_BIT.trim().split(',').filter((item: string) => item !== '');
 
     // Validierung der Nutzereingabe: Überprüfe, ob die Anzahl der Farben mit der Anzahl der OPC-Bits übereinstimmt
-    if (this.ColorCount != this.BitArray.length) {
+    if (this.colorArray.length != this.BitArray.length) {
       console.log("Colors/OPC-Bits: Anzahl stimmt nicht überein!");
       // Zeige dem Benutzer eine verständliche Fehlermeldung an und brich die Methode ab
       alert("Anzahl der Farben stimmt nicht mit der Anzahl an OPC-Bits überein. Bitte Werte prüfen!");
+      return;
+    }
+
+    if (this.colorArray.length <= 0) {
+      console.log("Bitte mindestens eine Farbe hinzufügen!");
+      // Zeige dem Benutzer eine verständliche Fehlermeldung an und brich die Methode ab
+      alert("Bitte mindestens eine Farbe hinzufügen!");
       return;
     }
 
@@ -181,7 +221,7 @@ export class UpdateDashboardComponent implements OnInit {
         POS_X: ampel.POS_X,                // Aktualisierte X-Position der Ampel
         POS_Y: ampel.POS_Y,                // Aktualisierte Y-Position der Ampel
         SIZE: ampel.SIZE,                  // Aktualisierte Größe der Ampel
-        ColorCount: this.ColorCount,       // Anzahl der Farben
+        ColorCount: this.colorArray.length,       // Anzahl der Farben
         COLORS: this.colorArray.join(','), // Farben als kommagetrennter String
         OPC_BIT: this.BitArray.join(',')   // OPC-Bits als kommagetrennter String
       };
@@ -190,10 +230,12 @@ export class UpdateDashboardComponent implements OnInit {
       console.log(updatedAmpel);
 
       // Sende eine POST-Anfrage an die API, um die Ampel zu aktualisieren
-      const response = await this.http.post(this.apiConfig.DB_APIUrl + "updateAmpel", updatedAmpel).toPromise();
+      const response = await lastValueFrom(
+        this.http.post(this.apiConfig.DB_APIUrl + "updateAmpel", updatedAmpel)
+      );
 
-      // Erfolgreiche Antwort: Setze die Zählvariable zurück
-      this.ColorCount = 1;
+      // Erfolgreiche Antwort
+
 
       // Debugging: Zeige die erfolgreiche Aktualisierung an
       console.log("Ampel erfolgreich gespeichert:", response);
@@ -215,7 +257,9 @@ export class UpdateDashboardComponent implements OnInit {
     const isConfirmed = window.confirm("Möchten Sie diese Ampel wirklich löschen?");
     if (isConfirmed) {
       // Mit HttpClient wird eine POST-Anfrage an die API gesendet, um die Ampel-Daten zu löschen
-      const res = await this.http.post(`${this.apiConfig.DB_APIUrl}deleteAmpel?ID=${ID}`, {}).toPromise();
+      const res = await lastValueFrom(
+        this.http.post(`${this.apiConfig.DB_APIUrl}deleteAmpel?ID=${ID}`, {})
+      );
       console.log("API Response:", res); // Gibt die empfangenen Daten zur Kontrolle in der Konsole aus
 
       await this.getAmpelnVonBoard();
@@ -227,7 +271,7 @@ export class UpdateDashboardComponent implements OnInit {
 
 
 
-  updateBoard(ID: number) {
+  async updateBoard(ID: number) {
     console.log("Update ID:" + ID);
 
     const bodyBoards = {
@@ -237,19 +281,19 @@ export class UpdateDashboardComponent implements OnInit {
     console.log(this.selectedNAME);
 
     // Sende eine POST-Anfrage an die API, um das Dashboard zu aktualisieren 
-    this.http.post(`${this.apiConfig.DB_APIUrl}updateDashboardName?ID=${ID}`, bodyBoards)
-      .subscribe(
-        (res) => {
-          // Bei erfolgreicher Antwort
-          console.log("Dashboard erfolgreich aktualisiert.");
-          alert("Dashboard erfolgreich aktualisiert.");
-        },
-        (error) => {
-          // Fehlerbehandlung: Zeige eine Fehlermeldung, falls die Anfrage fehlschlägt
-          console.error("Fehler beim Speichern des Dashboards", error);
-          alert("Fehler beim Speichern des Dashboards. Bitte versuche es erneut.");
-        }
+    try {
+      // Sende die POST-Anfrage und warte auf die Antwort
+      const res = await lastValueFrom(
+        this.http.post(`${this.apiConfig.DB_APIUrl}updateDashboardName?ID=${ID}`, bodyBoards)
       );
+
+      console.log("Dashboard erfolgreich aktualisiert.");
+      alert("Dashboard erfolgreich aktualisiert.");
+    } catch (error) {
+      // Fehlerbehandlung
+      console.error("Fehler beim Speichern des Dashboards", error);
+      alert("Fehler beim Speichern des Dashboards. Bitte versuche es erneut.");
+    }
 
   }
 
@@ -261,7 +305,9 @@ export class UpdateDashboardComponent implements OnInit {
     const isConfirmed = window.confirm("Möchten Sie dieses Dashboard wirklich löschen?");
     if (isConfirmed) {
       // Mit HttpClient wird eine POST-Anfrage an die API gesendet, um die Dashboard-Daten zu löschen (inkl. Ampeln)
-      const res = await this.http.post(`${this.apiConfig.DB_APIUrl}deleteDashboard?ID=${ID}`, {}).toPromise();
+      const res = await lastValueFrom(
+        this.http.post(`${this.apiConfig.DB_APIUrl}deleteDashboard?ID=${ID}`, {})
+      );
       console.log("API Response:", res); // Gibt die empfangenen Daten zur Kontrolle in der Konsole aus
         
       await this.clearID(); //Daten Löschen
@@ -270,4 +316,11 @@ export class UpdateDashboardComponent implements OnInit {
   }
 
 
+
+
+
+
+
+
+  
 }

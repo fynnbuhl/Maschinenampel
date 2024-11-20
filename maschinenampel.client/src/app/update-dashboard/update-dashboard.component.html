@@ -69,7 +69,7 @@
         <th>y-Position</th>
         <th>Größe</th>
         <th>Farben</th>
-        <th>OPC-Bits</th>
+        <th>OPC-Bit Addressen</th>
       </tr>
       <tr class="ampelEdit">
         <td>
@@ -82,10 +82,43 @@
           <input type="number" required placeholder="Größe in px" [(ngModel)]="SIZEnew" />
         </td>
         <td>
-          <input type="text" required placeholder="Frabe,Farbe,Farbe..." [(ngModel)]="COLORSnew" />
-        </td>
+          <!--<input type="text" required placeholder="Frabe,Farbe,Farbe..." [(ngModel)]="COLORSnew" />-->
+
+          <div class="color-input">
+            <div class="ampel">
+              <div class="color-tags">
+                <span *ngFor="let color of colorsNew; let i = index"
+                      [style.backgroundColor]="color"
+                      class="color-tag"
+                      (click)="removeColor(i)">
+                </span>
+              </div>
+              </div>
+
+                <!-- Verstecktes Farbauswahlfeld -->
+                <input type="color"
+                       id="color-picker"
+                       [(ngModel)]="selectedColor"
+                       (change)="addColor()"
+                       style="display: none;" />
+
+                <!-- Button mit "+" Symbol -->
+                <button (click)="openColorPicker()"
+                        [disabled]="colorsNew.length >= maxColors"
+                        class="add-color-btn">
+                  Add
+                </button>
+              </div>
+
+              <!--<p *ngIf="colorsNew.length === maxColors" style="color: red;">
+        Du kannst maximal 6 Farben auswählen!
+      </p>
+      <p *ngIf="colorsNew.length === 0" style="color: red;">
+        Bitte wähle mindestens eine Farbe aus.
+      </p>-->
+</td>
         <td>
-          <input type="text" required placeholder="BIT,BIT,BIT..." [(ngModel)]="OPC_BITnew" />
+          <input type="text" required placeholder="A8.1,A8.2..." [(ngModel)]="OPC_BITnew" />
         </td>
         <td>
           <button (click)="addAmpel(selectedID)">Hinzufügen</button>
@@ -107,11 +140,11 @@
           <th>y-Position</th>
           <th>Größe</th>
           <th>Farben</th>
-          <th>OPC-Bits</th>
+          <th>OPC-Bit Addressen</th>
         </tr>
         <!-- Schleife durch die Ampel-Liste und zeige für jedes Element die Inhalte an -->
         <!-- *ngFor iteriert über jedes Ampel-Objekt und zeigt dessen Eigenschaften an -->
-        <tr class="ampelEdit" *ngFor="let ampel of Ampeln">
+        <tr class="ampelEdit" *ngFor="let ampel of Ampeln; let i = index">
           <td>
             {{ ampel.POS_X }}
           </td>
@@ -131,7 +164,7 @@
             <input [(ngModel)]="ampel.OPC_BIT" type="text" required placeholder="BIT,BIT,BIT..." value="{{ ampel.OPC_BIT }}" />
           </td>
 
-            <!-- Buttons für Update und Löschen -->
+          <!-- Buttons für Update und Löschen -->
           <td>
             <button (click)="updateAmpel(ampel.ID, ampel)">Update</button>
           </td>
@@ -148,6 +181,15 @@
   <ng-template #noDataAmpel>
     <p>Keine Ampeln gefunden.</p>
   </ng-template>
+
+
+
+
+
+
+  
+
+
 
 
 </div>

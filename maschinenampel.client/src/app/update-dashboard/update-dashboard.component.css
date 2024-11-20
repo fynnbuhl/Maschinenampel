@@ -1,0 +1,30 @@
+.color-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ampel {
+  background-color: #3d3d3d;
+  align-content: center;
+}
+
+.color-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.color-tag {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%; /* Setzt die Ecken auf einen Kreis */
+  color: white;
+  cursor: pointer;
+}
+
+.color-tag:hover {
+    opacity: 0.8;
+}

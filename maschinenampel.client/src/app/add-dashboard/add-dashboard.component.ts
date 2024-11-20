@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http'; // HttpClient wird verwendet,
 import { Component, OnInit } from '@angular/core'; // Component und OnInit werden benötigt, um eine Angular-Komponente zu definieren
 import { Router } from '@angular/router'; // Router wird verwendet, um zur Navigation zwischen verschiedenen Routen zu ermöglichen
 import { ApiConfigService } from '@service/API_Service'; //ApiConfigService wird verwendet um die API-URLs global zu verwalten
+import { lastValueFrom } from 'rxjs';
 
 import { Observable } from 'rxjs'; // RxJS (Reactive Extensions for JavaScript) wird für asynchrone Operationen und reaktive Programmierung verwendet.
 import { Injectable } from '@angular/core';
@@ -148,7 +149,7 @@ export class AddDashboardComponent implements OnInit {
 
 
   // Methode zum Speichern eines neuen Dashboards in der Datenbank
-  saveToDB() {
+  async saveToDB() {
 
     // Erstelle das Objekt mit den zu sendenden Daten
     const bodyBoards = {
@@ -157,21 +158,21 @@ export class AddDashboardComponent implements OnInit {
       aspectRatio: this.aspectRatio
     };
 
-    // Sende eine POST-Anfrage an die API, um das neue Dashboard zu erstellen
-    this.http.post(this.apiConfig.DB_APIUrl + "addDashboard", bodyBoards)
-      .subscribe(
-        (res) => {
-          // Bei erfolgreicher Antwort:
-          this.newBoard = ""; // Setze das Eingabefeld für den Namen zurück
-          this.IMG_PATH = ""; // Setze das Eingabefeld für den IMG_PATH zurück
-          this.aspectRatio = ""; // Setze das Eingabefeld für die aspectRatio zurück
-        },
-        (error) => {
-          // Fehlerbehandlung: Zeige eine Fehlermeldung, falls die Anfrage fehlschlägt
-          console.error("Fehler beim Speichern des Dashboards", error);
-          alert("Fehler beim Speichern des Dashboards. Bitte versuche es erneut.");
-        }
-      );
+    try {
+      // Sende die POST-Anfrage und warte auf die Antwort
+      await lastValueFrom(this.http.post(this.apiConfig.DB_APIUrl + "addDashboard", bodyBoards));
+
+      // Erfolgreiche Antwort: Setze die Eingabefelder zurück
+      this.newBoard = "";
+      this.IMG_PATH = "";
+      this.aspectRatio = "";
+
+      console.log("Dashboard erfolgreich hinzugefügt!");
+    } catch (error) {
+      // Fehlerbehandlung: Zeige eine Fehlermeldung, falls die Anfrage fehlschlägt
+      console.error("Fehler beim Speichern des Dashboards", error);
+      alert("Fehler beim Speichern des Dashboards. Bitte versuche es erneut.");
+    }
   }
 
 

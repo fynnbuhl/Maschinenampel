@@ -49,28 +49,35 @@
     Aktuelle Ansicht: {{selectedNAME}}
   </div>
 
+  <div *ngIf="isLoading" class="loading-indicator">
+    Lade Ampeln...
+  </div>
+
   <!-- Überprüfe, ob die Ampel-Daten erfolgreich geladen wurden -->
   <!-- Dieser Block wird nur angezeigt, wenn mindestens ein Ampel-Element in der Ampel-Liste vorhanden ist -->
   <div *ngIf="Ampeln.length > 0; else noDataAmpel">
-    <div class="ampel-container" [style.aspect-ratio]="aspectRatio">
+    <div class="dashboard-container" [style.aspect-ratio]="aspectRatio">
+
       <!-- Hintergrundbild des Layouts -->
       <div class="background-container">
         <!-- Anzeige des ausgewählten Hintergrundbildes -->
         <img class="hallenlayout_img" src={{selectedIMG}} />
       </div>
 
-      <!-- Schleife durch die Ampel-Liste und zeige für jedes Element die Ampel an -->
-      <div *ngFor="let ampel of Ampeln; let ampIndex = index" class="ampel" [ngStyle]="getElementStyles(ampel)">
-        <!-- Iteriere über die Farben der jeweiligen Ampel -->
-        <!-- Die Ampel-Farben werden aus dem colorsArray gezogen -->
-        <div *ngFor="let color of colorsArray[ampIndex]; let i = index" class="circle-wrapper">
-          <!-- Zeichne den Kreis: Wenn der zugehörige Bit-Wert 1 ist, wird der Kreis in der jeweiligen Farbe angezeigt, andernfalls schwarz -->
-          <div class="circle"
-               [ngStyle]="{'background-color': OPC_BITArray[ampIndex][i] === 1 ? color : 'black'}">
+      <div *ngIf="!isLoading">
+        <!-- Schleife durch die Ampel-Liste und zeige für jedes Element die Ampel an -->
+        <div *ngFor="let ampel of Ampeln; let ampIndex = index" class="ampel" [ngStyle]="getElementStyles(ampel)">
+          <!-- Iteriere über die Farben der jeweiligen Ampel -->
+          <!-- Die Ampel-Farben werden aus dem colorsArray gezogen -->
+          <div *ngFor="let color of colorsArray[ampIndex]; let i = index" class="circle-wrapper">
+            <!-- Zeichne den Kreis: Wenn der zugehörige Bit-Wert 1 ist, wird der Kreis in der jeweiligen Farbe angezeigt, andernfalls schwarz -->
+            <div class="circle"
+                 [ngStyle]="{'background-color': OPC_BITArray[ampIndex][i] === 1 ? color : 'black'}">
+            </div>
           </div>
+          <!-- Anzeige der Ampel-ID -->
+          ID:{{ampel.ID}}
         </div>
-        <!-- Anzeige der Ampel-ID -->
-        ID:{{ampel.ID}}
       </div>
     </div>
   </div>

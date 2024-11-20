@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http'; // HttpClient wird verwendet,
 import { Component, OnInit } from '@angular/core'; // Component und OnInit werden benötigt, um eine Angular-Komponente zu definieren
 import { Router } from '@angular/router'; // Router wird verwendet, um zwischen den Routen zu navigieren
 import { ApiConfigService } from '@service/API_Service'; // ApiConfigService verwaltet global die API-URLs für die Kommunikation mit der Backend-API
+import { lastValueFrom } from 'rxjs';
 
 // Deklaration der Komponente mit Metadaten
 @Component({
@@ -11,6 +12,8 @@ import { ApiConfigService } from '@service/API_Service'; // ApiConfigService ver
   styleUrls: ['./display-dashboard.component.css'] // Das CSS für das Styling dieser Komponente
 })
 export class DisplayDashboardComponent implements OnInit {
+
+  isLoading: boolean = true; // Indikator, ob Daten noch geladen werden
 
   selectedID: number = 0; // Hält die ID des ausgewählten Dashboards
   selectedNAME: string = ""; // Hält den Namen des ausgewählten Dashboards
@@ -29,6 +32,10 @@ export class DisplayDashboardComponent implements OnInit {
     this.refreshBoards();
   }
 
+
+
+
+
   // Methode zum Abrufen der Dashboards-Daten von der API
   refreshBoards() {
     // HTTP GET-Anfrage an die API, um alle Dashboards abzurufen
@@ -39,8 +46,15 @@ export class DisplayDashboardComponent implements OnInit {
       });
   }
 
+
+
+
+
+
+
   // Methode, die aufgerufen wird, wenn der Benutzer ein Dashboard auswählt
-  viewBoard(ID: number, NAME: string, IMG_PATH: string, ratio: string): void {
+  async viewBoard(ID: number, NAME: string, IMG_PATH: string, ratio: string) {
+    this.isLoading = true;
     // Setze die Variablen für die ausgewählten Dashboard-Daten
     this.selectedID = ID;
     this.selectedNAME = NAME;
@@ -50,12 +64,17 @@ export class DisplayDashboardComponent implements OnInit {
     console.log("Ausgewählte Dashboard-ID:" + this.selectedID);
 
     // Aktualisiere die Dashboards und lade die Ampeln für das ausgewählte Dashboard
-    this.refreshBoards();
-    this.getAmpelnVonBoard();
+    await this.refreshBoards();
+    await this.getAmpelnVonBoard();
+    this.isLoading = false;
   }
 
+
+
+
+
   // Methode, um die Auswahl zurückzusetzen und auf den ursprünglichen Zustand zurückzusetzen
-  clearID(): void {
+  clearID() {
     // Setze alle Variablen auf ihre Standardwerte zurück
     this.selectedID = 0;
     this.selectedNAME = "";
@@ -63,48 +82,85 @@ export class DisplayDashboardComponent implements OnInit {
     this.aspectRatio = "";
   }
 
+
+
+
+
+
   // Arrays zur Speicherung von Farb- und OPC-Daten für Ampeln
   colorsArray: string[][] = []; // Ein Array von Arrays, das Farben für jede Ampel speichert
-  OPC_NameArray: number[][] = []; // Ein Array von Arrays, das die OPC-Namen speichert
-  OPC_BITArray: number[][] = []; // Ein Array von Arrays, das die OPC-Status-Bits speichert
+  OPC_AddArray: string[][] = []; // Ein Array von Arrays, das die OPC-Addressen speichert
+  OPC_BITArray: number[][] = []; // Ein Array von Arrays, das die OPC-Status-Bits der Addressen speichert
 
   // Methode zum Abrufen der Ampel-Daten von der API
-  getAmpelnVonBoard() {
+  async getAmpelnVonBoard() {
     // HTTP GET-Anfrage, um die Ampel-Daten für das ausgewählte Dashboard abzurufen
-    this.http.get<any[]>(`${this.apiConfig.DB_APIUrl}getAmpeln?selected_ID=${this.selectedID}`)
-      .subscribe(data => { // Wenn die Antwort erfolgreich ist
-        this.Ampeln = data; // Speichern der Ampel-Daten in der Ampeln-Variable
-        console.log("API Response:", data); // Ausgabe der Antwort zur Kontrolle
 
-        // Wenn Ampeln vorhanden sind, konvertiere die COLOR- und OPC_BIT-Strings in Arrays
-        if (this.Ampeln.length > 0) {
-          // Iteriere über alle Ampeln und konvertiere die Farb- und OPC-Bit-Strings
-          for (let ampeln of this.Ampeln) {
-            // Teile den COLORS-String anhand des Kommas und speichere ihn im colorsArray
-            this.colorsArray.push(ampeln.COLORS.split(','));
+    try {
+      // Warten auf die Antwort der HTTP-Anfrage
+      const data = await lastValueFrom(
+        this.http.get<any[]>(`${this.apiConfig.DB_APIUrl}getAmpeln?selected_ID=${this.selectedID}`)
+      );
 
-            //TODO: als String behandeln && Datenabnk ändern
-            // Teile den OPC_BIT-String anhand des Kommas und wandle ihn in Zahlen um, um ihn im OPC_NameArray zu speichern
-            this.OPC_NameArray.push(ampeln.OPC_BIT.split(',').map(Number)); // .map(Number) wandelt die Strings in Zahlen um
-          }
+      // Speichern der Ampel-Daten in der Ampeln-Variable
+      this.Ampeln = data;
+      console.log("API Response:", data); // Ausgabe der Antwort zur Kontrolle
 
-          // Aktualisiere die Farben (bisher nur Platzhalterfunktion, kann später weiterentwickelt werden)
-          this.updateColors();
-          console.log("Color Array:", this.colorsArray);
-          console.log("BIT Array:", this.OPC_BITArray);
+      // Wenn Ampeln vorhanden sind, konvertiere die COLOR- und OPC_BIT-Strings in Arrays
+      if (this.Ampeln.length > 0) {
+        // Iteriere über alle Ampeln und konvertiere die Farb- und OPC-Bit-Strings
+        for (let ampeln of this.Ampeln) {
+          //  Wandle den COLORS-String in Array
+          this.colorsArray.push(ampeln.COLORS.split(','));
+
+          // Wandle den OPC_BIT-String in Array
+          this.OPC_AddArray.push(ampeln.OPC_BIT.split(','));
         }
-      });
+      }
+    } catch (error) {
+      // Fehlerbehandlung: Zeige eine Fehlermeldung, falls die Anfrage fehlschlägt
+      console.error("Fehler beim Abrufen der Ampeln:", error);
+      alert("Fehler beim Abrufen der Ampeln. Bitte versuche es erneut.");
+    }
+
+    await this.updateColors();
+    //console.log("colorsArray:", this.colorsArray);
+    console.log("OPC_AddArray:", this.OPC_AddArray);
+    console.log("OPC_BITArray:", this.OPC_BITArray);
   }
 
-  // Placeholder-Methode für das Aktualisieren der Farben (wird später weiterentwickelt)
-  updateColors() {
-    // TODO: Hier eine Integration mit dem OPC-Controller einbinden, um das BIT-Array zu aktualisieren
-    this.OPC_BITArray = this.OPC_NameArray; // Temporäre Implementierung: Weist das OPC_NameArray dem OPC_BITArray zu
+
+
+  //Methode um die OPC-Adressen in Bit-Zustanände 0/1 zu wandeln
+  async updateColors() {
+    try {
+      // Erstelle das Objekt mit den zu sendenden Daten
+      const bodyAddr = {
+        OPC_BIT_Addr: this.OPC_AddArray
+      };
+
+      // Sende eine POST-Anfrage an die API, um das neue Dashboard zu erstellen
+      const res = await lastValueFrom(this.http.post(this.apiConfig.OPC_APIUrl + "getBITs", bodyAddr));
+
+      // Erfolgreiche Antwort: Zuweisung des Ergebnisses zu OPC_BITArray
+      this.OPC_BITArray = res as number[][];
+      //console.log("RES:", res);
+    } catch (error) {
+      // Fehlerbehandlung: Zeige eine Fehlermeldung, falls die Anfrage fehlschlägt
+      console.error("Fehler beim Abrufen der Bits.", error);
+      alert("Fehler beim Abrufen der Bits. Bitte versuche es erneut.");
+    }
   }
+
+
+
+
+
+
 
   // Methode, um die Styles für jedes Ampel-Element zu berechnen
   getElementStyles(element: any) {
-    const height = 1.32 * element.ColorCount * element.SIZE; // Höhe wird von der Breite und der Anzahl der Farben abhängt
+    const height = 1.32 * element.ColorCount * element.SIZE; // Höhe wird von der Breite und der Anzahl der Farben abhänging berechnet
 
     // Berechnung der Position und Größe für jedes Ampel-Element
     const styles = {

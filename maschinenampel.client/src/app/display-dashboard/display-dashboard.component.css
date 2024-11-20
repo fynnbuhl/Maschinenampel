@@ -1,9 +1,11 @@
 /* Hier nichts weiter eintragen!*/
 
 /*Ampeln*/
-.ampel-container {
+.dashboard-container {
   position: absolute;
   width: 100%;
+  /*ODER*/
+  /*height: 95vh;*/
   background-repeat: no-repeat;
   background-size: contain;
 }
