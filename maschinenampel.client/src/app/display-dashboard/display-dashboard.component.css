@@ -3,11 +3,11 @@
 /*Ampeln*/
 .dashboard-container {
   position: absolute;
-  width: 100%;
-  /*ODER*/
-  /*height: 95vh;*/
   background-repeat: no-repeat;
   background-size: contain;
+  /*wird durch fitScreenAspectRatio() festgelegt*/
+  width: var(--width, auto);
+  height: var(--height, auto);
 }
 
 .ampel {
@@ -15,7 +15,8 @@
   border-radius: 8px;
   position: absolute;
   align-content: center;
-  font-size: 80%;
+  font-size: var(--font-size,calc(calc(16vw + 9vh)*0.04));
+  color: white;
 }
 
 .circle-wrapper {

@@ -33,10 +33,31 @@ export class WebSocketService {
     }
   }
 
-  closeConnection(): void {
+  /*closeConnection(): void {
     if (this.socket) {
       console.log('WebSocket-Verbindung geschlossen.');
       this.socket.close();
     }
+  }*/
+
+
+  closeConnection(): void {
+    if (this.socket) {
+      if (this.socket.readyState === WebSocket.OPEN) {
+        this.socket.onclose = (event) => {
+          console.log('WebSocket geschlossen:', event);
+        };
+        this.socket.onerror = (event) => {
+          console.error('WebSocket-Fehler:', event);
+        };
+        this.socket.close();
+      } else {
+        console.log('WebSocket ist nicht im Status OPEN. Status:', this.socket.readyState);
+      }
+    } else {
+      console.log('WebSocket ist nicht initialisiert.');
+    }
   }
+
+
 }

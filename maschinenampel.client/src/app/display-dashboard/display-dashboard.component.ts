@@ -1,6 +1,6 @@
 // Importiere die notwendigen Angular-Module und -Services
 import { HttpClient } from '@angular/common/http'; // HttpClient wird verwendet, um HTTP-Anfragen zu machen
-import { Component, OnInit } from '@angular/core'; // Component und OnInit werden benötigt, um eine Angular-Komponente zu definieren
+import { Component, OnInit, HostListener} from '@angular/core'; // Component und OnInit werden benötigt, um eine Angular-Komponente zu definieren
 import { Router } from '@angular/router'; // Router wird verwendet, um zwischen den Routen zu navigieren
 import { ApiConfigService } from '@service/API-Key_Service'; // ApiConfigService verwaltet global die API-URLs für die Kommunikation mit der Backend-API
 import { WebSocketService } from '@service/websocket.service'; // Import des WebSocketService zur Echtzeit-Kommunikation mit dem Server
@@ -19,7 +19,8 @@ export class DisplayDashboardComponent implements OnInit {
   selectedID: number = 0; // Hält die ID des ausgewählten Dashboards
   selectedNAME: string = ""; // Hält den Namen des ausgewählten Dashboards
   selectedIMG: string = ""; // Hält den Bildpfad des ausgewählten Dashboards
-  aspectRatio: string = ""; // Hält das Seitenverhältnis des ausgewählten Dashboards
+  aspectRatio: number = 0; // Hält das Seitenverhältnis des ausgewählten Dashboards
+  screenAspectRatio: number = 0; // Hält das Seitenverhältnis des Browserfensters
 
   // Arrays für die abgerufenen Dashboards und Ampeln
   Dashboards: any[] = []; // Speichert die abgerufenen Dashboards
@@ -30,9 +31,32 @@ export class DisplayDashboardComponent implements OnInit {
 
   ngOnInit() {
     // Lädt die Dashboards beim Start der Komponente
-    this.refreshBoards();
+    this.refreshBoards();      
+  }
 
-   
+
+
+
+  //Methode um die darstellung des Layoutbilds an das Boweserfenster anzupassen
+  fitScreenAspectRatio() {
+    this.screenAspectRatio = window.innerWidth / window.innerHeight; //Berechne das Seitenverhältnis vom Browserfenster
+
+    const dashboardContainer = document.querySelector('.dashboard-container') as HTMLElement;
+
+    if (this.aspectRatio > this.screenAspectRatio) {
+      // Layoutbild ist breiter als der Bildschirm, setze die Breite auf 100%
+      dashboardContainer.style.setProperty('--width', '100%');
+      dashboardContainer.style.setProperty('--height', 'auto');
+    } else {
+      // Layoutbild ist schmaler als der Bildschirm, setze die Höhe auf 93vh (wegen oberem Menü)
+      dashboardContainer.style.setProperty('--height', '93vh');
+      dashboardContainer.style.setProperty('--width', 'auto');
+    } 
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: Event) {
+    this.fitScreenAspectRatio();
   }
 
 
@@ -64,13 +88,21 @@ export class DisplayDashboardComponent implements OnInit {
     this.selectedID = ID;
     this.selectedNAME = NAME;
     this.selectedIMG = IMG_PATH;
-    this.aspectRatio = ratio;
+    this.aspectRatio = Number(ratio);
 
     console.log("Ausgewählte Dashboard-ID:" + this.selectedID);
+
+
 
     // Aktualisiere die Dashboards und lade die Ampeln für das ausgewählte Dashboard
     await this.refreshBoards();
     await this.getAmpelnVonBoard();
+
+
+
+    //Seitenverhältnis der Anzeige auf Bildschirm anpassen
+    this.fitScreenAspectRatio();
+
 
 
     // WebSocket-Verbindung zum OPC-Controller herstellen
@@ -92,12 +124,18 @@ export class DisplayDashboardComponent implements OnInit {
 
 
   // Methode, um die Auswahl zurückzusetzen und auf den ursprünglichen Zustand zurückzusetzen
-  clearID() {
+  async clearSelection() {
     // Setze alle Variablen auf ihre Standardwerte zurück
     this.selectedID = 0;
     this.selectedNAME = "";
     this.selectedIMG = "";
-    this.aspectRatio = "";
+    this.aspectRatio = 0;
+
+    this.Ampeln = [];
+
+    this.colorsArray = [];
+    this.OPC_AddArray = [];
+    this.OPC_BITArray = [];
 
     //Schließe Websocket Verbindung
     this.webSocketService.closeConnection();
@@ -145,7 +183,7 @@ export class DisplayDashboardComponent implements OnInit {
     }
 
 
-    await this.updateColors();
+    await this.getBitsFromAddr();
 
     //console.log("colorsArray:", this.colorsArray);
     console.log("OPC_AddArray:", this.OPC_AddArray);
@@ -154,8 +192,8 @@ export class DisplayDashboardComponent implements OnInit {
 
 
 
-  //Methode um die OPC-Adressen in Bit-Zustanände 0/1 zu wandeln
-  async updateColors() {
+  //Methode um die OPC-Adressen an OPC-Controller weiterzugeben
+  async getBitsFromAddr() {
     try {
       // Erstelle das Objekt mit den zu sendenden Daten
       const bodyAddr = {
@@ -166,7 +204,7 @@ export class DisplayDashboardComponent implements OnInit {
       const res = await lastValueFrom(this.http.post(this.apiConfig.OPC_APIUrl + "getBITs", bodyAddr));
 
       // Erfolgreiche Antwort: Zuweisung des Ergebnisses zu OPC_BITArray
-      this.OPC_BITArray = res as number[][];
+      this.OPC_BITArray = res as number[][]; //gff. in zukunft nicht mehr notwendig
       //console.log("RES:", res);
     } catch (error) {
       // Fehlerbehandlung: Zeige eine Fehlermeldung, falls die Anfrage fehlschlägt
@@ -183,7 +221,8 @@ export class DisplayDashboardComponent implements OnInit {
 
   // Methode, um die Styles für jedes Ampel-Element zu berechnen
   getElementStyles(element: any) {
-    const height = 1.32 * element.ColorCount * element.SIZE; // Höhe wird von der Breite und der Anzahl der Farben abhänging berechnet
+    const height = 1.3 * element.ColorCount * element.SIZE + 3; // Höhe wird von der Breite und der Anzahl der Farben abhänging berechnet
+    const font = element.SIZE * 2; //FontSize wird von der Breite abhänging berechnet
 
     // Berechnung der Position und Größe für jedes Ampel-Element
     const styles = {
@@ -193,8 +232,7 @@ export class DisplayDashboardComponent implements OnInit {
       height: `${height}%`, // Setze die Höhe basierend auf der berechneten Höhe
       display: 'flex',
       flexDirection: 'column', // Richte die inneren Elemente in einer Spalte an
-      justifyContent: 'space-between', // Verteile den Platz gleichmäßig zwischen den inneren Elementen
-      alignItems: 'center' // Richte die inneren Elemente in der Mitte aus
+      alignItems: 'center', // Richte die inneren Elemente in der Mitte aus
     };
 
     return styles; // Rückgabe des berechneten Styles

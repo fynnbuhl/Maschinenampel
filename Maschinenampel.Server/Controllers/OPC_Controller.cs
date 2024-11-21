@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Data;
 using System.Net.WebSockets;
 using System.Text;
+using static Maschinenampel.Server.Controllers.OPC_Controller;
 
 namespace Maschinenampel.Server.Controllers
 {
@@ -14,6 +15,7 @@ namespace Maschinenampel.Server.Controllers
     [RequireHttps]
     public class OPC_Controller : ControllerBase
     {
+        public string[][] OPC_getBitFromAddr = new string[0][];
 
         public class OPCModel
         {
@@ -30,11 +32,22 @@ namespace Maschinenampel.Server.Controllers
                 return BadRequest("Ungültige Eingabedaten");
             }
 
+            // Speichern einer Kopie der OPC_BIT_Addr
+            OPC_getBitFromAddr = model.OPC_BIT_Addr;
+
+            //Testausgabe
+            Console.WriteLine("Empfangene Adressen:");
+            foreach (var row in OPC_getBitFromAddr)
+            {
+                Console.WriteLine(string.Join(", ", row));
+            }
+
+
             try
             {
                 // Beispiel für dynamische Erstellung eines BIT Arrays.
                 // Hier könnte eine asynchrone Methode zum Abrufen der BIT-Werte von einem OPC-Server integriert werden.
-                int[][] OPC_BITArray = await GetOPCBitsFromControllerAsync(model.OPC_BIT_Addr);
+                int[][] OPC_BITArray = await GetOPCBitsFromControllerAsync(OPC_getBitFromAddr);
 
                 if (OPC_BITArray == null || OPC_BITArray.Length == 0)
                 {
@@ -78,12 +91,12 @@ namespace Maschinenampel.Server.Controllers
 
 
 
-
         // Diese Methode wird durch eine GET-Anfrage an 'api/websocket/connectWebSocket' aufgerufen.
         // Sie stellt die WebSocket-Verbindung her.
         [HttpGet("connectWebSocket")]
         public async Task ConnectWebSocket()
         {
+
             // Überprüfen, ob die Anfrage eine WebSocket-Anfrage ist
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
@@ -102,6 +115,79 @@ namespace Maschinenampel.Server.Controllers
 
         // Diese Methode verarbeitet die WebSocket-Verbindung und sendet ständig aktualisierte Daten an den Client
         private async Task HandleWebSocketAsync(WebSocket webSocket)
+        {
+            byte[] buffer = new byte[1024 * 4]; // Puffergröße für empfangene Daten (4 KB)
+
+            // Initialisiere das 2D-Array mit Beispieldaten
+            int[][] array = new int[][]
+            {
+                new int[] { 1, 1 },  // Erste Zeile des 2D-Arrays
+                new int[] { 0, 1, 1 } // Zweite Zeile des 2D-Arrays
+            };
+
+
+            // Empfange Client-Nachrichten in einem separaten Task, um die regelmäßige Array-Aktualisierung nicht zu blockieren.
+            var receiveTask = Task.Run(async () =>
+            {
+                
+                try
+                {
+                    while (webSocket.State == WebSocketState.Open)
+                    {
+                        // Empfange Daten, um zu prüfen, ob der Client ein Close-Frame sendet
+                        var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+                        if (result.CloseStatus.HasValue)
+                        {
+                            Console.WriteLine($"WebSocket vom Client geschlossen: {result}");
+                            break;
+                        }
+
+                        // Hier könntest du empfangene Daten verarbeiten, falls nötig
+                        Console.WriteLine("Nachricht vom Client empfangen.");
+                    }
+                }
+                catch (WebSocketException ex)
+                {
+                    Console.WriteLine($"WebSocket-Fehler: {ex.Message}");
+                }
+            });
+
+
+
+            try
+            {
+                while (webSocket.State == WebSocketState.Open)
+                {
+                    
+                    array = UpdateArray(array);// Aktualisiere das Array regelmäßig
+
+                    string json = JsonConvert.SerializeObject(array); // Wandle das Array in einen JSON-String um, um es an den Client zu senden
+                    var bytes = Encoding.UTF8.GetBytes(json); // Wandle den JSON-String in Bytes um (weil WebSockets nur Binärdaten übertragen können)
+
+                    // Sende die Bytes an den Client
+                    await webSocket.SendAsync(
+                        new ArraySegment<byte>(bytes),
+                        WebSocketMessageType.Text,
+                        true,
+                        CancellationToken.None
+                    );
+
+                    // Verzögerung von 1 Sekunden, bevor der Vorgang wiederholt wird
+                    // Das ermöglicht es, dass der Client alle 1 Sekunden neue Daten empfängt
+                    await Task.Delay(1000);
+                }
+            }
+            finally
+            {
+                await receiveTask; // Stelle sicher, dass der Empfangs-Task beendet wird
+                OPC_getBitFromAddr = new string[0][];
+            }
+
+
+        }
+
+        /*private async Task HandleWebSocketAsync(WebSocket webSocket)
         {
             // Puffergröße für empfangene Daten (4 KB)
             byte[] buffer = new byte[1024 * 4];
@@ -129,11 +215,18 @@ namespace Maschinenampel.Server.Controllers
                 // Sende die Bytes an den Client
                 await webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
 
-                // Verzögerung von 2 Sekunden, bevor der Vorgang wiederholt wird
-                // Das ermöglicht es, dass der Client alle 2 Sekunden neue Daten empfängt
-                await Task.Delay(2000);
+                // Verzögerung von 1 Sekunden, bevor der Vorgang wiederholt wird
+                // Das ermöglicht es, dass der Client alle 1 Sekunden neue Daten empfängt
+                await Task.Delay(1000);
             }
-        }
+
+
+
+            OPC_getBitFromAddr = []; //relevante Addressen zurücksetzten
+            Console.WriteLine("WebSocket wurde geschlossen.");
+        }*/
+
+
 
         // Diese Methode wird verwendet, um das Array zufällig zu ändern
         private int[][] UpdateArray(int[][] array)
@@ -161,6 +254,13 @@ namespace Maschinenampel.Server.Controllers
             // Gebe das aktualisierte Array zurück
             return array;
         }
+
+
+
+
+
+
+
 
 
 
