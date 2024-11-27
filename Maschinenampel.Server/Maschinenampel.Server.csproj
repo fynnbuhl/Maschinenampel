@@ -31,7 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="OPC_Server\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
