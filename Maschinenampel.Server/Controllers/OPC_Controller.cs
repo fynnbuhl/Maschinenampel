@@ -19,8 +19,7 @@ namespace Maschinenampel.Server.Controllers
 
         public class OPCModel
         {
-            //public string[,] OPC_BIT_Addr { get; set; } //z.B. { { "A1", "A2" }, { "B1", "B2", "B3" } }
-            public string[][] OPC_BIT_Addr { get; set; }
+            //public string[,] OPC_BIT_Addr { get; set; } //z.B. { { "A1", "A2" },            public string[][] OPC_BIT_Addr { get; set; }
         }
 
         [HttpPost]
