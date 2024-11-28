@@ -211,9 +211,10 @@ namespace Maschinenampel.Server.Controllers
                                 }
 
 
-                    //TODO
                     Console.WriteLine($"POS: {i},{j}, Addr: {OPC_Addr[i][j]}");
-                    //OPC_Bits[i][j] = OPCgetBitformNode( OPC_Addr[i][j] );
+
+                    //TODO: private Instanzvariable _opcService vom Typ OpcService deklariert und druch einen Constructor eine Instanz des OpcService zu speichern
+                    //OPC_Bits[i][j] = _opcService.OPCgetBitformNode( OPC_Addr[i][j] );
                 }
             }
 
