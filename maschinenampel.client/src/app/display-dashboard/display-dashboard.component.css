@@ -1,5 +1,91 @@
-/* Hier nichts weiter eintragen!*/
+button {
+  margin: 5px;
+  background-color: #f4f4f4;
+  font-weight: bold;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
 
+  button:hover {
+    background-color: #f56600;
+  }
+
+  button:disabled {
+    background-color: #6c6d6f;
+    cursor: not-allowed;
+  }
+
+input[type="text"], input[type="file"] {
+  margin: 5px;
+  width: 100%;
+  max-width: 400px;
+  padding: 10px;
+  border: 1px solid #6c6d6f;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #6c6d6f;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+input:focus {
+  border-color: #f56600;
+  outline: none;
+  box-shadow: 0 0 4px rgba(245, 102, 0, 0.5);
+}
+
+.input {
+  min-height: 22px;
+}
+
+.info-box {
+  margin: 5px;
+  color: #6c6d6f;
+  line-height: 1.5;
+}
+
+.container {
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.menu {
+  padding: 5px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  color: #6c6d6f;
+  font-family: 'Arial';
+  font-weight: bold;
+}
+
+.list {
+  min-width: 40%;
+}
+
+h1, h2, h3, p {
+  color: #6c6d6f;
+  font-weight: bold;
+  font-family: 'Arial';
+}
+
+a {
+  color: #f56600;
+}
+
+
+
+
+
+
+/*#####################################################*/
+/*Ab hier nichts ändern!*/
 /*Ampeln*/
 .dashboard-container {
   position: absolute;
@@ -15,7 +101,7 @@
   border-radius: 8px;
   position: absolute;
   align-content: center;
-  font-size: var(--font-size,calc(calc(16vw + 9vh)*0.04));
+  font-size: calc(calc(16vw + 9vh)*0.03);
   color: white;
 }
 
@@ -34,20 +120,6 @@
   background-color: black; /* Default color */
 }
 
-
-
-/*Fallback - noData*/
-.noData {
-  width: 95%;
-  height: auto;
-  line-height: 1.8;
-  border-radius: 5px;
-  background-color: #FDF7DF;
-  border: 1px solid #FEEC6F;
-  color: #C9971C;
-}
-
-
 /*Hintergrudbild*/
 .background-container {
   width: 95%;
@@ -62,6 +134,16 @@
 }
 
 .hallenlayout_img {
-  width: 97% ;
+  width: 97%;
   border: 3px solid black;
+}
+
+.noData {
+  padding: 5px;
+  border-radius: 4px;
+  box-shadow: 0 0 4px rgba(245, 102, 0, 1);
+  color: #6c6d6f;
+  font-weight: bold;
+  font-family: 'Arial';
+  width: 95%;
 }

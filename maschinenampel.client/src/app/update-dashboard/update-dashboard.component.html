@@ -1,29 +1,33 @@
 <router-outlet></router-outlet>
 
+<!-- Dieser Block wird angezeigt, wenn selectedID gleich 0 ist -->
 <div *ngIf="selectedID === 0">
 
-  <button routerLink="/">Menü</button>
-  <!-- Dieser Block wird angezeigt, wenn selectedID gleich 0 ist: Kein Board ausgewählt -->
+  <!-- Menü-Button: Benutzer wird zum Hauptmenü zurückgeführt -->
+  <button routerLink="/">< Menü</button>
+  <!-- Dieser Block wird angezeigt, wenn selectedID gleich 0 ist: Kein Dashboard ausgewählt -->
+  <h3>Bitte Dashboard zum Updaten auswählen:</h3>
 
-  <p>Bitte Dashboard zum Berabeiten ausgewählen:</p>
-
-  <div *ngIf="Dashboards.length > 0; else noData">
-    <div>
+  <div class="container">
+    <!-- Überprüfen, ob Dashboards geladen wurden (Dashboards.length > 0) -->
+    <div *ngIf="Dashboards.length > 0; else noData">
       <!-- Schleife durch die Dashboards-Liste und zeige nur die Namen an -->
       <div *ngFor="let dashboard of Dashboards">
-        <!-- Auswahl-Button, der beim Klicken die Methode viewBoard mit der ID + IMG des Dashboards aufruft -->
-        <button (click)="viewBoard(dashboard.ID, dashboard.NAME, dashboard.IMG_PATH)">{{ dashboard.NAME }} Auswählen</button>
+        <!-- Auswahl-Button für jedes Dashboard:
+             Beim Klicken wird die Methode 'viewBoard' mit den ID, NAME, IMG_PATH und aspectRatio des Dashboards aufgerufen -->
+        <button  class="list" (click)="viewBoard(dashboard.ID, dashboard.NAME, dashboard.IMG_PATH)">{{ dashboard.NAME }} Auswählen</button>
       </div>
     </div>
+
+    <!-- Fallback-Nachricht: Falls keine Dashboards-Daten vorhanden sind, wird dieser Inhalt angezeigt -->
+    <!-- Das #noData-Template wird verwendet, wenn Dashboards leer sind -->
+    <ng-template #noData>
+      <p>Keine Dashboards gefunden. Bitte warten!</p>
+    </ng-template>
   </div>
-
-  <!-- Fallback-Nachricht: Falls keine Dashboards-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
-  <!-- Das #noData-Template wird verwendet, wenn Dashboards leer ist -->
-  <ng-template #noData>
-    <p>Keine Dashboards gefunden. Bitte warten!</p>
-  </ng-template>
-
 </div>
+
+
 
 
 
@@ -31,57 +35,65 @@
 <div *ngIf="selectedID > 0">
   <!-- Dieser Block wird angezeigt, wenn selectedID größer als 0 ist: Board ausgewählt mit selectedID=ID -->
   <div class="menu">
-    <button routerLink="/">Menü</button>
+    <button routerLink="/">< Menü</button>
     <button (click)="clearID()">Auswahl aufheben</button>
   </div>
 
+  <div class="hr"><br /></div>
 
-  <div class="list">
-    Dashboard bearbeiten:
+
+
+  <div class="edit-container">
+    <div class="head">Dashboard Namen bearbeiten:</div>
     <table>
       <tr>
-        <th>Dashboard Name</th>
+        <!--<th>Dashboard Name</th>
         <th>Hallenlayout</th>
+        <th></th>
+        <th></th>!-->
       </tr>
       <tr>
-        <td>
-          <input [(ngModel)]="selectedNAME" type="text" required palceholder="Dashboard Name" value="{{ selectedNAME }}" />
+        <td class="td_board">
+          <input [(ngModel)]="selectedNAME" type="text" class="large" required palceholder="Dashboard Name" value="{{ selectedNAME }}" />
         </td>
-        <td>
-          <input type="text" required disabled value="{{ selectedIMG }}" />
-        <td>
-        <td>
+        <td class="td_board">
+          <input type="text" style="background-color: #dddddd;" class="large" required disabled value="{{ selectedIMG }}" />
+        </td>
+        <td class="short_td_board">
           <button (click)="updateBoard(selectedID)">Update</button>
         </td>
-        <td>
+        <td class="short_td_board">
           <button (click)="deleteBoard(selectedID)">Löschen</button>
-        <td>
+        </td>
       </tr>
     </table>
   </div>
-  <hr>
 
-  <div class="list">
-    Ampel hinzufügen:
+  <div class="hr"><br /></div>
+
+  <div class="edit-container">
+    <div class="head">Ampel hinzufügen:</div>
+    <hr>
     <table>
       <tr>
-        <th>x-Position</th>
-        <th>y-Position</th>
+        <th>% x-Pos.</th>
+        <th>% y-Pos.</th>
         <th>Größe</th>
         <th>Farben</th>
-        <th>OPC-Bit Addressen</th>
+        <th>OPC-Node Addressen</th>
+        <th></th>
       </tr>
       <tr class="ampelEdit">
-        <td>
+        <td class="short_td_add">
           <input type="number" required placeholder="X-Position in %" [(ngModel)]="POS_Xnew" />
         </td>
-        <td>
+        <td class="short_td_add">
           <input type="number" required placeholder="Y-Position in %" [(ngModel)]="POS_Ynew" />
         </td>
-        <td>
+        <td class="short_td_add">
           <input type="number" required placeholder="Größe in px" [(ngModel)]="SIZEnew" />
         </td>
-        <td>
+        <td class="color_td_add">
           <!--<input type="text" required placeholder="Frabe,Farbe,Farbe..." [(ngModel)]="COLORSnew" />-->
 
           <div class="color-input">
@@ -93,88 +105,98 @@
                       (click)="removeColor(i)">
                 </span>
               </div>
-              </div>
+            </div>
 
-                <!-- Verstecktes Farbauswahlfeld -->
-                <input type="color"
-                       id="color-picker"
-                       [(ngModel)]="selectedColor"
-                       (change)="addColor()"
-                       style="display: none;" />
+            <!-- Verstecktes Farbauswahlfeld -->
+            <input type="color"
+                   id="color-picker"
+                   [(ngModel)]="selectedColor"
+                   (change)="addColor()"
+                   style="display: none;" />
 
-                <!-- Button mit "+" Symbol -->
-                <button (click)="openColorPicker()"
-                        [disabled]="colorsNew.length >= maxColors"
-                        class="add-color-btn">
-                  Add
-                </button>
-              </div>
-
-              <!--<p *ngIf="colorsNew.length === maxColors" style="color: red;">
-        Du kannst maximal 6 Farben auswählen!
-      </p>
-      <p *ngIf="colorsNew.length === 0" style="color: red;">
-        Bitte wähle mindestens eine Farbe aus.
-      </p>-->
-</td>
-        <td>
-          <input type="text" required placeholder="A8.1,A8.2..." [(ngModel)]="OPC_BITnew" />
+            <button (click)="openColorPicker()"
+                    [disabled]="colorsNew.length >= maxColors"
+                    class="add-color-btn">
+              Add
+            </button>
+          </div>
+          <!--<p *ngIf="colorsNew.length === maxColors" style="color: red;">
+            Du kannst maximal 6 Farben auswählen!
+          </p>
+          <p *ngIf="colorsNew.length === 0" style="color: red;">
+            Bitte wähle mindestens eine Farbe aus.
+          </p>-->
         </td>
-        <td>
+        <td class="opc_td_add">
+          <input type="text" class="short" required placeholder="Maschine" [(ngModel)]="OPC_Maschinenew" />
+          <input type="text" class="short" required placeholder="Steuergerät" [(ngModel)]="OPC_Steuergeraetnew" />
+          <input type="text" class="mid" required placeholder="Tag1,Tag2,..." [(ngModel)]="OPC_BITnew" />
+        </td>
+        <td class="save_td_add">
           <button (click)="addAmpel(selectedID)">Hinzufügen</button>
         </td>
       </tr>
     </table>
   </div>
-  <hr>
+
+  <div class="hr"><br /></div>
+
+
+
 
   <!-- Überprüfe, ob die Ampel-Daten erfolgreich geladen wurden -->
   <!-- Dieser Block wird nur angezeigt, wenn mindestens ein Ampel-Element in der Ampel-Liste vorhanden ist -->
   <div *ngIf="Ampeln.length > 0; else noDataAmpel">
-    <div class="list">
-      Ampeln bearbeiten:
+    <div class="edit-container">
+      <div class="head">Ampeln bearbeiten:</div>
+      <hr>
       <table>
         <tr>
           <th>ID</th>
-          <th>x-Position</th>
-          <th>y-Position</th>
+          <th>% x-Pos.</th>
+          <th>% y-Pos.</th>
           <th>Größe</th>
           <th>Farben</th>
-          <th>OPC-Bit Addressen</th>
+          <th>OPC-Node Addressen</th>
+          <th></th>
+          <th></th>
         </tr>
         <!-- Schleife durch die Ampel-Liste und zeige für jedes Element die Inhalte an -->
         <!-- *ngFor iteriert über jedes Ampel-Objekt und zeigt dessen Eigenschaften an -->
         <tr class="ampelEdit" *ngFor="let ampel of Ampeln; let i = index">
           <td>
-            {{ ampel.POS_X }}
+            {{ ampel.ID }}
           </td>
-          <td>
+          <td class="short_td_up">
             <input [(ngModel)]="ampel.POS_X" type="number" required palceholder="X-Position in %" value="{{ ampel.POS_X }}" />
           </td>
-          <td>
+          <td class="short_td_up">
             <input [(ngModel)]="ampel.POS_Y" type="number" required palceholder="Y-Position in %" value="{{ ampel.POS_Y }}" />
           </td>
-          <td>
+          <td class="short_td_up">
             <input [(ngModel)]="ampel.SIZE" type="number" required palceholder="Größe in %" value="{{ ampel.SIZE }}" />
           </td>
-          <td>
-            <input [(ngModel)]="ampel.COLORS" type="text" required placeholder="Frabe,Farbe,Farbe..." value="{{ ampel.COLORS }}" />
+          <td class="color_td_up">
+            <input [(ngModel)]="ampel.COLORS" type="text" class="large" required placeholder="Frabe,Farbe,Farbe..." value="{{ ampel.COLORS }}" />
           </td>
-          <td>
-            <input [(ngModel)]="ampel.OPC_BIT" type="text" required placeholder="BIT,BIT,BIT..." value="{{ ampel.OPC_BIT }}" />
+          <td class="opc_td_up">
+            <input [(ngModel)]="ampel.OPC_Addr" type="text" class="large" required placeholder="Maschine.Steuergerät." value="{{ ampel.OPC_Addr }}" />
+            <input [(ngModel)]="ampel.OPC_TagList" type="text" class="large" required placeholder="Tag1,Tag2,..." value="{{ ampel.OPC_TagList }}" />
           </td>
 
           <!-- Buttons für Update und Löschen -->
-          <td>
+          <td class="save_td_up">
             <button (click)="updateAmpel(ampel.ID, ampel)">Update</button>
           </td>
-          <td>
+          <td class="save_td_up">
             <button (click)="deleteAmpel(ampel.ID)">Löschen</button>
           </td>
         </tr>
       </table>
     </div>
   </div>
+
+
 
   <!-- Fallback-Nachricht: Falls keine Ampel-Daten vorhanden sind, wird dieser Inhalt (ng-template) angezeigt -->
   <!-- Das #noDataAmpel-Template wird verwendet, wenn Ampeln leer ist -->
@@ -187,7 +209,7 @@
 
 
 
-  
+
 
 
 

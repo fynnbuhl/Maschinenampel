@@ -6,10 +6,11 @@
     [SIZE] INT NOT NULL,
     [ColorCount] INT NOT NULL,
     [COLORS] TEXT NOT NULL,
-    [OPC_BIT] TEXT NOT NULL
+    [OPC_Addr] TEXT NOT NULL,
+    [OPC_TagList] TEXT NOT NULL
 );
 
-INSERT INTO AmpelDB (DASHBOARD_ID, POS_X, POS_Y, SIZE, ColorCount, COLORS, OPC_BIT)
+INSERT INTO AmpelDB (DASHBOARD_ID, POS_X, POS_Y, SIZE, ColorCount, COLORS, OPC_Addr, OPC_TagList)
 VALUES
-    (1, 20, 20, 4, 3, 'green,red,blue', '["1", "0", "0"]'),
-    (2, 40, 40, 4, 2, 'blue,red', '["0", "1"]');
+    (1, 20, 20, 2, 3, 'green,red,blue', 'Maschine1.Steuerung1', 'TAG1,TAG2,TAG3'),
+    (1, 40, 40, 2, 2, 'blue,red', 'Maschine2.Steuerung2', 'TAG1,TAG2');

@@ -2,7 +2,7 @@
 import { HttpClient } from '@angular/common/http'; // HttpClient wird verwendet, um HTTP-Anfragen zu machen
 import { Component, OnInit } from '@angular/core'; // Component und OnInit werden benötigt, um eine Angular-Komponente zu definieren
 import { Router } from '@angular/router'; // Router wird verwendet, um zur Navigation zwischen verschiedenen Routen zu ermöglichen
-import { ApiConfigService } from '@service/API-Key_Service'; //ApiConfigService wird verwendet um die API-URLs global zu verwalten
+import { ApiConfigService } from '@service/API-URL_Service'; //ApiConfigService wird verwendet um die API-URLs global zu verwalten
 import { lastValueFrom } from 'rxjs';
 
 @Component({
@@ -18,8 +18,10 @@ export class UpdateDashboardComponent implements OnInit {
 
   POS_Xnew = 0;
   POS_Ynew = 0;
-  SIZEnew = 4;
+  SIZEnew = 2;
   colorsNew: string[] = [];
+  OPC_Maschinenew = "";
+  OPC_Steuergeraetnew = "";
   OPC_BITnew = "";
   colorArraynew: string[] = [];
   BitArraynew: string[] = [];
@@ -31,8 +33,14 @@ export class UpdateDashboardComponent implements OnInit {
   Dashboards: any[] = [];
   Ampeln: any[] = [];
 
+
+
+
   // Der Konstruktor, der die Abhängigkeiten (HttpClient und Router) für diese Komponente injiziert
   constructor(private http: HttpClient, public router: Router, private apiConfig: ApiConfigService) { }
+
+
+
 
   // ngOnInit ist ein Angular-Lebenszyklus-Hook, der beim Initialisieren der Komponente aufgerufen wird
   // Hier wird die Methode refreshBoards aufgerufen, um die Dashboards-Daten beim Laden der Komponente zu laden
@@ -99,9 +107,9 @@ export class UpdateDashboardComponent implements OnInit {
 
     // Validierung der Nutzereingabe: Überprüfe, ob die Anzahl der Farben mit der Anzahl der OPC-Bits übereinstimmt
     if (this.colorsNew.length != this.BitArraynew.length) {
-      console.log("Colors/OPC-Bits: Anzahl stimmt nicht überein!");
+      console.log("Colors/OPC-Tags: Anzahl stimmt nicht überein!");
       // Zeige dem Benutzer eine verständliche Fehlermeldung an und brich die Methode ab
-      alert("Anzahl der Farben stimmt nicht mit der Anzahl an OPC-Bits überein. Bitte Werte prüfen!");
+      alert("Anzahl der Farben stimmt nicht mit der Anzahl an OPC-Tags überein. Bitte Werte prüfen!");
       return;
     }
 
@@ -121,7 +129,8 @@ export class UpdateDashboardComponent implements OnInit {
         SIZE: this.SIZEnew,                     // Größe der Ampel
         ColorCount: this.colorsNew.length,
         COLORS: this.colorsNew.join(','),
-        OPC_BIT: this.BitArraynew.join(',')     // OPC-Bits als kommagetrennter String
+        OPC_Addr: this.OPC_Maschinenew + "." + this.OPC_Steuergeraetnew,
+        OPC_TagList: this.BitArraynew.join(',')     // OPC-Bits als kommagetrennter String
       };
 
       // Debugging: Zeige die zu sendenden Daten an
@@ -135,9 +144,11 @@ export class UpdateDashboardComponent implements OnInit {
       // Erfolgreiche Antwort: Zurücksetzen der Eingabewerte auf Standardwerte
       this.POS_Xnew = 0;        // Standardwert für die X-Position
       this.POS_Ynew = 0;        // Standardwert für die Y-Position
-      this.SIZEnew = 4;         // Standardgröße der Ampel
+      this.SIZEnew = 2;         // Standardgröße der Ampel
       this.colorsNew = [];      // Leere Eingabe für Farben
       this.selectedColor = '#000000';
+      this.OPC_Maschinenew = "";
+      this.OPC_Steuergeraetnew = "";
       this.OPC_BITnew = "";     // Leere Eingabe für OPC-Bits
 
       // Debugging: Zeige die erfolgreiche Speicherung an
@@ -197,13 +208,13 @@ export class UpdateDashboardComponent implements OnInit {
     console.log(this.colorArray.length);
 
     // OPC-Bits ebenfalls in ein Array umwandeln, ähnlich wie bei den Farben
-    this.BitArray = ampel.OPC_BIT.trim().split(',').filter((item: string) => item !== '');
+    this.BitArray = ampel.OPC_TagList.trim().split(',').filter((item: string) => item !== '');
 
     // Validierung der Nutzereingabe: Überprüfe, ob die Anzahl der Farben mit der Anzahl der OPC-Bits übereinstimmt
     if (this.colorArray.length != this.BitArray.length) {
-      console.log("Colors/OPC-Bits: Anzahl stimmt nicht überein!");
+      console.log("Colors/OPC-Tags: Anzahl stimmt nicht überein!");
       // Zeige dem Benutzer eine verständliche Fehlermeldung an und brich die Methode ab
-      alert("Anzahl der Farben stimmt nicht mit der Anzahl an OPC-Bits überein. Bitte Werte prüfen!");
+      alert("Anzahl der Farben stimmt nicht mit der Anzahl an OPC-Tags überein. Bitte Werte prüfen!");
       return;
     }
 
@@ -223,7 +234,8 @@ export class UpdateDashboardComponent implements OnInit {
         SIZE: ampel.SIZE,                  // Aktualisierte Größe der Ampel
         ColorCount: this.colorArray.length,       // Anzahl der Farben
         COLORS: this.colorArray.join(','), // Farben als kommagetrennter String
-        OPC_BIT: this.BitArray.join(',')   // OPC-Bits als kommagetrennter String
+        OPC_Addr: ampel.OPC_Addr,            //Aktualisierte Adressliste
+        OPC_TagList: this.BitArray.join(',')   // OPC-Bits als kommagetrennter String
       };
 
       // Debugging: Zeige das zu sendende Objekt an
@@ -251,6 +263,8 @@ export class UpdateDashboardComponent implements OnInit {
 
 
 
+
+
   async deleteAmpel(ID: number) {
     console.log("Lösche ampel mit ID:" + ID);
 
@@ -265,6 +279,8 @@ export class UpdateDashboardComponent implements OnInit {
       await this.getAmpelnVonBoard();
     }
   }
+
+
 
 
 

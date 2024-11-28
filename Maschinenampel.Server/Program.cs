@@ -1,3 +1,4 @@
+using Maschinenampel.Server.Services;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -22,6 +23,9 @@ builder.Services.AddControllers()
 
 //|DataDirectory|-Platzhalter für Relativen-Datenbankpfad in appsettings.json initialisieren
 AppDomain.CurrentDomain.SetData("DataDirectory", Directory.GetCurrentDirectory());
+
+// Füge den OPC-Service hinzu
+builder.Services.AddSingleton<OPC_Service>();
 
 var app = builder.Build();
 

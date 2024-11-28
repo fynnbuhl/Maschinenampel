@@ -4,42 +4,44 @@
 
 <!-- Button, der zu einer Route führt ("/"), die in der Angular-Routing-Konfiguration definiert ist.
     In diesem Fall wird der Benutzer zur Startseite oder einem Menü weitergeleitet. -->
-<button routerLink="/">Menü</button>
+<button routerLink="/">< Menü</button>
 
 <!-- Titel des aktuellen Formulars für das Hinzufügen eines neuen Dashboards -->
-<h1>Neues Dashboard hinzufügen</h1>
+<h1>Neues Dashboard hinzufügen:</h1>
 
-<!-- Eingabefeld für den Namen des Dashboards, das der Benutzer eingeben muss.
-    ngModel bindet die Eingabe an die Variable 'newBoard' im TypeScript-Code,
-    damit der Name des Dashboards verfügbar und weiterverwendbar ist. -->
-<input type="text" placeholder="Dashboard Name" required [(ngModel)]="newBoard" />
+<div class="container">
+  <!-- Eingabefeld für den Namen des Dashboards, das der Benutzer eingeben muss.
+      ngModel bindet die Eingabe an die Variable 'newBoard' im TypeScript-Code,
+      damit der Name des Dashboards verfügbar und weiterverwendbar ist. -->
+  <input type="text" class="input" placeholder="Dashboard Name" required [(ngModel)]="newBoard" />
 
-<!-- Eingabefeld für das Hochladen eines Bildes (z.B. ein PNG, JPG oder JPEG).
-    Das 'required' Attribut sorgt dafür, dass der Benutzer eine Datei auswählen muss,
-    bevor er das Formular absenden kann. Das 'accept' Attribut schränkt die Dateitypen ein,
-    die hochgeladen werden können (nur Bilder). -->
-<input type="file" required accept=".png, .jpg, .jpeg" (change)="onFileSelected($event)" />
+  <!-- Eingabefeld für das Hochladen eines Bildes (z.B. ein PNG, JPG oder JPEG).
+      Das 'required' Attribut sorgt dafür, dass der Benutzer eine Datei auswählen muss,
+      bevor er das Formular absenden kann. Das 'accept' Attribut schränkt die Dateitypen ein,
+      die hochgeladen werden können (nur Bilder). -->
+  <input type="file" class="input" required accept=".png, .jpg, .jpeg" (change)="onFileSelected($event)" />
 
-<br />
+  <br />
 
-<!-- Button zum Absenden des Formulars und Hinzufügen des neuen Dashboards.
-    Der Button löst die Methode 'add_board()' im TypeScript-Code aus, die
-    das neue Dashboard mit den eingegebenen Informationen verarbeitet. -->
-<button [disabled]="loading" (click)="add_board()">Board hinzufügen</button>
+  <!-- Button zum Absenden des Formulars und Hinzufügen des neuen Dashboards.
+      Der Button löst die Methode 'add_board()' im TypeScript-Code aus, die
+      das neue Dashboard mit den eingegebenen Informationen verarbeitet. -->
+  <button [disabled]="loading" (click)="add_board()">Board hinzufügen</button>
 
-<!-- Button für den Fall, dass der Benutzer das Hinzufügen des Dashboards abbrechen möchte.
-    Der Button navigiert zurück zur Startseite oder einem anderen definierten Ziel
-    (im Beispiel zur Route "/"). -->
-<button routerLink="/">Abbrechen</button>
+  <!-- Button für den Fall, dass der Benutzer das Hinzufügen des Dashboards abbrechen möchte.
+      Der Button navigiert zurück zur Startseite oder einem anderen definierten Ziel
+      (im Beispiel zur Route "/"). -->
+  <button routerLink="/">Abbrechen</button>
 
-<!-- Lade-Indikator, der während eines asynchronen Vorgangs angezeigt wird.
-    Wenn die Variable 'loading' im TypeScript-Code den Wert 'true' hat,
-    wird der Text "Bitte warten!" angezeigt, um den Benutzer darüber zu informieren,
-    dass der Vorgang noch läuft. -->
-<div *ngIf="loading">
-  <span>Bitte warten!</span>
+  <!-- Lade-Indikator, der während eines asynchronen Vorgangs angezeigt wird.
+      Wenn die Variable 'loading' im TypeScript-Code den Wert 'true' hat,
+      wird der Text "Bitte warten!" angezeigt, um den Benutzer darüber zu informieren,
+      dass der Vorgang noch läuft. -->
+  <div style="color: #f56600" *ngIf="loading">
+    <span style="margin: 5px;">Bitte warten!</span>
+  </div>
+
+  <!-- Hinweis für den Benutzer, dass er unter einer anderen Route ("/updateDashboard")
+      das Dashboard weiter aktualisieren kann. -->
+  <div class="info-box"> Ampeln können unter <a routerLink="/updateDashboard">Dashboard updaten</a> hinzugefügt werden!</div>
 </div>
-
-<!-- Hinweis für den Benutzer, dass er unter einer anderen Route ("/updateDashboard")
-    das Dashboard weiter aktualisieren kann. -->
-<p>Ampeln können unter <a routerLink="/updateDashboard">Dashboard updaten</a> hinzugefügt werden!</p>

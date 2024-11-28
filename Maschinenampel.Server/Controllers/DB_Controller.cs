@@ -130,7 +130,8 @@ namespace Maschinenampel.Server.Controllers
             public int SIZE { get; set; }
             public int ColorCount { get; set; }
             public string COLORS { get; set; }
-            public string OPC_BIT { get; set; }
+            public string OPC_Addr { get; set; }
+            public string OPC_TagList { get; set; }
         }
 
         // Asynchrone Methode zum Hinzufügen einer Ampel
@@ -144,7 +145,7 @@ namespace Maschinenampel.Server.Controllers
                 return BadRequest("Ungültige Eingabedaten");
             }
 
-            string query = "INSERT INTO AmpelDB (DASHBOARD_ID, POS_X, POS_Y, SIZE, ColorCount, COLORS, OPC_BIT) VALUES(@DASHBOARD_ID, @POS_X, @POS_Y, @SIZE, @ColorCount, @COLORS, @OPC_BIT)"; // SQL-Abfrage zum Hinzufügen eines Dashboards
+            string query = "INSERT INTO AmpelDB (DASHBOARD_ID, POS_X, POS_Y, SIZE, ColorCount, COLORS, OPC_Addr, OPC_TagList) VALUES(@DASHBOARD_ID, @POS_X, @POS_Y, @SIZE, @ColorCount, @COLORS, @OPC_Addr, @OPC_TagList)"; // SQL-Abfrage zum Hinzufügen eines Dashboards
 
             try
             {
@@ -157,7 +158,8 @@ namespace Maschinenampel.Server.Controllers
                     new SqlParameter("@SIZE", model.SIZE),
                     new SqlParameter("@ColorCount", model.ColorCount),
                     new SqlParameter("@COLORS", model.COLORS),
-                    new SqlParameter("@OPC_BIT", model.OPC_BIT)
+                    new SqlParameter("@OPC_Addr", model.OPC_Addr),
+                    new SqlParameter("@OPC_TagList", model.OPC_TagList)
                 };
 
                  // Führt die SQL-Abfrage aus, die keine Rückgabewerte hat
@@ -237,8 +239,9 @@ namespace Maschinenampel.Server.Controllers
                          POS_Y = @POS_Y, 
                          SIZE = @SIZE, 
                          ColorCount = @ColorCount, 
-                         COLORS = @COLORS, 
-                         OPC_BIT = @OPC_BIT 
+                         COLORS = @COLORS,
+                         OPC_Addr = @OPC_Addr,
+                         OPC_TagList = @OPC_TagList
                      WHERE ID = @Dashboard_ID";
 
             try
@@ -252,7 +255,8 @@ namespace Maschinenampel.Server.Controllers
                     new SqlParameter("@SIZE", model.SIZE),
                     new SqlParameter("@ColorCount", model.ColorCount),
                     new SqlParameter("@COLORS", model.COLORS),
-                    new SqlParameter("@OPC_BIT", model.OPC_BIT)
+                    new SqlParameter("@OPC_Addr", model.OPC_Addr),
+                    new SqlParameter("@OPC_TagList", model.OPC_TagList)
                 };
 
                 // Führt die SQL-Abfrage aus und gibt die Anzahl der betroffenen Zeilen zurück

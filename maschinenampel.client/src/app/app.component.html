@@ -2,18 +2,18 @@
 <div *ngIf="router.url === '/'">
 
   <h1>MENÜ</h1>
-
+  <hr>
   <!-- Navigationsbuttons für verschiedene Aktionen -->
-  <div class="button-container">
+  <div class="container">
     <!-- Jeder Button verwendet routerLink, um zur entsprechenden Seite zu navigieren -->
     <!-- Button zur Anzeige des Dashboards. Leitet zur Route '/displayDashboard' -->
-    <button class="menu-button" routerLink="/displayDashboard"> Dashboard anzeigen </button>
-
-    <!-- Button zum Hinzufügen eines neuen Dashboards. Leitet zur Route '/addDashboard' -->
-    <button class="menu-button" routerLink="/addDashboard"> Dashboard hinzufügen </button>
+    <button routerLink="/displayDashboard"> Dashboard anzeigen </button>
 
     <!-- Button zum Updaten eines vorhandenen Dashboards. Leitet zur Route '/updateDashboard' -->
-    <button class="menu-button" routerLink="/updateDashboard"> Dashboard updaten </button>
+    <button routerLink="/updateDashboard"> Dashboard updaten </button>
+
+    <!-- Button zum Hinzufügen eines neuen Dashboards. Leitet zur Route '/addDashboard' -->
+    <button routerLink="/addDashboard"> Dashboard hinzufügen </button>
   </div>
 </div>
 

@@ -1,23 +1,89 @@
-/* Basis CSS für deine Buttons */
-.button-container {
+.container {
   display: flex;
   flex-direction: column; /* Stellt die Buttons untereinander */
   align-items: flex-start;
   gap: 20px; /* Abstand zwischen den Buttons */
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.menu-button {
-  min-width: 400px;
+body {
+  font-family: 'Arial';
+  background-color: #f4f4f4;
+  color: #6c6d6f;
+}
+
+button {
+  min-width: 40%;
   padding: 15px 40px; /* Größe des Buttons */
   font-size: 18px; /* Textgröße für große Darstellung */
-  background-color: #007bff; /* Farbe für Flat-Design */
-  color: white;
+  margin: 5px;
+  background-color: #f4f4f4;
+  font-weight: bold;
   border: none;
-  border-radius: 4px; /* Leicht abgerundete Ecken für modernes Design */
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s; /* Schöner Hover-Effekt */
+  transition: background-color 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.button:hover {
-  background-color: #0056b3; /* Dunklere Farbe beim Hover */
+  button:hover {
+    background-color: #f56600;
+  }
+
+  button:disabled {
+    background-color: #6c6d6f;
+    cursor: not-allowed;
+  }
+
+input[type="text"], input[type="file"] {
+  margin: 5px;
+  width: 100%;
+  max-width: 400px;
+  padding: 10px;
+  border: 1px solid #6c6d6f;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #6c6d6f;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+input:focus {
+  border-color: #f56600;
+  outline: none;
+  box-shadow: 0 0 4px rgba(245, 102, 0, 0.5);
+}
+
+.input {
+  min-height: 22px;
+}
+
+.info-box {
+  margin: 5px;
+  color: #6c6d6f;
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  color: #6c6d6f;
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 24px;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+a {
+  color: #f56600;
 }

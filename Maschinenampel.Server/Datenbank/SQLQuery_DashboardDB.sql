@@ -5,4 +5,4 @@
 [aspectRatio] VARCHAR(6) NOT NULL
 );
 
-INSERT INTO DashboardDB (NAME, IMG_PATH, aspectRatio) VALUES ('Board_TEST', 'images/test.jpg', '1.7777');
+INSERT INTO DashboardDB (NAME, IMG_PATH, aspectRatio) VALUES ('Board_TEST01', 'images/test.jpg', '1.7777');
