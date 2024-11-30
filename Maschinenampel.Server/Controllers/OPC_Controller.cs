@@ -193,10 +193,10 @@ namespace Maschinenampel.Server.Controllers
                                 var rand = new Random();
 
             // Iteriere durch das 2D-Array
-            for (int i = 0; i < OPC_Bits.Length; i++)
+            for (int i = 0; i < OPC_Addr.Length; i++)
             {
                 // Iteriere durch jede Zeile des Arrays
-                for (int j = 0; j < OPC_Bits[i].Length; j++)
+                for (int j = 0; j < OPC_Addr[i].Length; j++)
                 {
 
                     //Löschen

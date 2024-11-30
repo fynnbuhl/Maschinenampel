@@ -16,7 +16,7 @@ body {
 }
 
 button {
-  min-width: 40%;
+  min-width: 400px;
   padding: 15px 40px; /* Größe des Buttons */
   font-size: 18px; /* Textgröße für große Darstellung */
   margin: 5px;

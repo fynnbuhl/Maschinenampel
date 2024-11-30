@@ -2,7 +2,7 @@
 import { HttpClient } from '@angular/common/http'; // HttpClient wird verwendet, um HTTP-Anfragen zu machen
 import { Component, OnInit, HostListener} from '@angular/core'; // Component und OnInit werden benötigt, um eine Angular-Komponente zu definieren
 import { Router } from '@angular/router'; // Router wird verwendet, um zwischen den Routen zu navigieren
-import { ApiConfigService } from '@service/API-URL_Service'; // ApiConfigService verwaltet global die API-URLs für die Kommunikation mit der Backend-API
+import { ApiConfigService } from '@service/API-URL.service'; // ApiConfigService verwaltet global die API-URLs für die Kommunikation mit der Backend-API
 import { WebSocketService } from '@service/websocket.service'; // Import des WebSocketService zur Echtzeit-Kommunikation mit dem Server
 import { lastValueFrom } from 'rxjs';
 
