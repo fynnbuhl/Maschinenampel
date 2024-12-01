@@ -15,30 +15,26 @@ namespace Maschinenampel.Server.Controllers
     public class OPC_Controller : ControllerBase
     {
 
-        public static string[][] OPC_AddrArray = new string[0][];
-        public static int[][] OPC_BitArray;
+        string[][] OPC_AddrArray = new string[0][];
+        int[][] OPC_BitArray;
 
 
-        public class OPCModel
+
+        // Diese Methode wird durch eine GET-Anfrage an 'api/websocket/connectWebSocket' aufgerufen.
+        // Sie stellt die WebSocket-Verbindung her.
+        [HttpGet("connectWebSocket")]
+        public async Task ConnectWebSocket()
         {
-            //z.B. { { "A1", "A2" },{"B1", "B2", "B3"}}
-            public string[][] OPC_BIT_Addr { get; set; }
-        }
 
-        [HttpPost]
-        [Route("getBITs")]
-        public IActionResult GetBits([FromBody] OPCModel model)
-        {
-            if (model == null)
-            {
-                return BadRequest(new { Message = "Ungültige Eingabedaten" });
-            }
+            // Hole die URL-Parameter, die das Address-Array enthalten
+            var data = HttpContext.Request.Query["addresses"].ToString();
 
-            try
+            if (!string.IsNullOrEmpty(data))
             {
-              
-                    // Adressen speichern
-                    OPC_AddrArray = model.OPC_BIT_Addr;
+                try
+                {
+                    // Deserialisiere das Address-Array von JSON
+                    OPC_AddrArray = JsonConvert.DeserializeObject<string[][]>(data);
 
                     // Initialisiere das Bit-Array
                     OPC_BitArray = new int[OPC_AddrArray.Length][];
@@ -58,35 +54,24 @@ namespace Maschinenampel.Server.Controllers
                         Console.WriteLine(string.Join(", ", row));
                     }
 
-                    Console.WriteLine("Initalisierte Bits:");
-                    foreach (var row in OPC_BitArray)
+                    if (OPC_BitArray != null)
                     {
-                        Console.WriteLine(string.Join(", ", row));
+                        Console.WriteLine("Initalisierte Bits:");
+                        foreach (var row in OPC_BitArray)
+                        {
+                            Console.WriteLine(string.Join(", ", row));
+                        }
+                    } else 
+                    {
+                        Console.WriteLine("OPC_BitArray ist noch nicht initialisiert.");
                     }
-                
-
-                return Ok(new { Message = "OPC-Adressen erhalten." });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Fehler beim Abrufen der BITs: {ex.Message}");
-                return StatusCode(500, "Es gab ein Problem beim Verarbeiten der Anfrage.");
-            }
-        }
 
 
-
-
-
-
-        // Diese Methode wird durch eine GET-Anfrage an 'api/websocket/connectWebSocket' aufgerufen.
-        // Sie stellt die WebSocket-Verbindung her.
-        [HttpGet("connectWebSocket")]
-        public async Task ConnectWebSocket()
-        {
-            if (OPC_BitArray == null)
-            {
-                 Console.WriteLine("OPC_BitArray ist noch nicht initialisiert.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Fehler beim Deserialisieren des Address-Arrays: " + ex.Message);
+                }
             }
 
 

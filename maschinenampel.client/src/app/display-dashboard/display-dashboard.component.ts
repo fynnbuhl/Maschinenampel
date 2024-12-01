@@ -36,7 +36,6 @@ export class DisplayDashboardComponent implements OnInit {
 
 
 
-
   // Methode zum Abrufen der Dashboards-Daten von der API
   refreshBoards() {
     // HTTP GET-Anfrage an die API, um alle Dashboards abzurufen
@@ -72,17 +71,21 @@ export class DisplayDashboardComponent implements OnInit {
     await this.getAmpelnVonBoard();
 
 
-    //Seitenverhältnis der Anzeige auf Bildschirm anpassen
-    this.fitScreenAspectRatio();
-
     // WebSocket-Verbindung zum OPC-Controller herstellen
-    this.webSocketService.connect(this.apiConfig.OPC_APIUrl + 'connectWebSocket'); // Server-Adresse
+    //this.webSocketService.connect(this.apiConfig.OPC_APIUrl + 'connectWebSocket', this.OPC_AddArray); // Server-Adresse
+    this.webSocketService.connect(this.apiConfig.OPC_APIUrl + 'connectWebSocket', this.OPC_AddArray); // Server-Adresse + OPC_AddArray
 
     // Die empfangene Nachricht (event.data) wird als JSON interpretiert und in ein 2D-Array number[][] umgewandelt
     this.webSocketService.socket.onmessage = (event) => {
       this.OPC_BITArray = JSON.parse(event.data);
       console.log('Neuste OPC Daten:', this.OPC_BITArray)
     };
+
+
+    //Seitenverhältnis der Anzeige auf Bildschirm anpassen
+    setTimeout(() => {
+      this.fitScreenAspectRatio();
+    }, 0); // Verzögerung von 0 ms sorgt dafür, dass der DOM-Rendering abgeschlossen ist
 
 
 
@@ -184,33 +187,6 @@ export class DisplayDashboardComponent implements OnInit {
     //OPC_BITArray initalisieren: die Struktur von OPC_AddArray kopieren und alle Strings durch 1 ersetzen
     this.OPC_BITArray = this.OPC_AddArray.map(row => row.map(() => 1));
 
-
-    await this.getBitsFromAddr();
-  }
-
-
-
-  //Methode um die OPC-Adressen an OPC-Controller weiterzugeben
-  async getBitsFromAddr() {
-    try {
-      // Erstelle das Objekt mit den zu sendenden Daten
-      const bodyAddr = {
-        OPC_BIT_Addr: this.OPC_AddArray
-      };
-
-      // Sende eine POST-Anfrage an die API, um die OPC-Adressen an OPC-Controller weiterzugeben
-      const res = await lastValueFrom(this.http.post(this.apiConfig.OPC_APIUrl + "getBITs", bodyAddr));
-
-      //Adrressen werden vom WebSocket Serverseitig verarbeitet und die aktullen Daten durch socket.onmessage() geupdated
-      
-      // Erfolgreiche Antwort
-      console.log("OCP-Antwort:", res);
-            
-    } catch (error) {
-      // Fehlerbehandlung: Zeige eine Fehlermeldung, falls die Anfrage fehlschlägt
-      console.error("Fehler beim Abrufen der Bits.", error);
-      alert("Fehler beim Abrufen der Bits. Bitte versuche es erneut.");
-    }
   }
 
 
@@ -221,7 +197,7 @@ export class DisplayDashboardComponent implements OnInit {
 
   // Methode, um die Styles für jedes Ampel-Element zu berechnen
   getElementStyles(element: any) {
-    const height = element.ColorCount * element.SIZE * 1.32  +  element.SIZE*0.8; // Höhe wird von der Breite und der Anzahl der Farben abhänging berechnet (Apmelgröße für alle Lichter + Textfeld für ID)
+   const height = element.ColorCount * element.SIZE * 1.32  +  element.SIZE*0.8; // Höhe wird von der Breite und der Anzahl der Farben abhänging berechnet (Apmelgröße für alle Lichter + Textfeld für ID)
     
    const styles = {
       left: `${element.POS_X}%`, // Setze die horizontale Position basierend auf der X-Position

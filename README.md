@@ -1,5 +1,3 @@
 # Maschinenampel
 
-## Umgebungsvariablen:
-### maschinenampel.client/src/environments: hier ist die API-Server URL gespeichert (für Prod & Dev)
-### Maschinenampel.Server/appsettings.json: hier ist der Verbindungsschlüssel zu Datenbank gespeichert
+[Technische Dokumentation herunterladen](Technische_Dokumentation.pdf)

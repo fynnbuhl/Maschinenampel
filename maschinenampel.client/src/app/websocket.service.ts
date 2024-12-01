@@ -7,16 +7,22 @@ export class WebSocketService {
   public socket!: WebSocket; // WebSocket-Instanz
 
   // connect-Methode zum Herstellen einer WebSocket-Verbindung
-  connect(url: string): void {
+  connect(url: string, OPC_AddArray: string[][]): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       console.log('WebSocket-Verbindung bereits offen.');
       return;
     }
 
-    this.socket = new WebSocket(url);
+    // Array als JSON-String serialisieren und als URL-Parameter anhängen
+    const AddrData = encodeURIComponent(JSON.stringify(OPC_AddArray));
+    const fullUrl = `${url}?addresses=${AddrData}`;
+
+    // WebSocket mit der URL verbinden
+    this.socket = new WebSocket(fullUrl);
+
 
     this.socket.onopen = () => {
-      console.log('WebSocket-Verbindung geöffnet.');
+      console.log('WebSocket-Verbindung geöffnet. URL: ', fullUrl);
     };
 
     this.socket.onerror = (error) => {
@@ -32,14 +38,6 @@ export class WebSocketService {
       console.error('WebSocket ist nicht offen.');
     }
   }
-
-  /*closeConnection(): void {
-    if (this.socket) {
-      console.log('WebSocket-Verbindung geschlossen.');
-      this.socket.close();
-    }
-  }*/
-
 
   closeConnection(): void {
     if (this.socket) {
