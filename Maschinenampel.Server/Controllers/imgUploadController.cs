@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SixLabors.ImageSharp;
+//using SixLabors.ImageSharp;
+using SkiaSharp;
 
 
 namespace Maschinenampel.Server.Controllers
@@ -45,11 +46,28 @@ namespace Maschinenampel.Server.Controllers
                     await file.CopyToAsync(stream);
                 }
 
+
+
+
                 // **Bildgröße auslesen mit ImageSharp**
+                /*
                 using var image = await Image.LoadAsync(filePath); // Bild laden
                 int width = image.Width;
                 int height = image.Height;
                 float aspectRatio = (float)width / height; // Seitenverhältnis berechnen
+                */
+
+
+                // Bild mit SkiaSharp laden
+                using var skBitmap = SKBitmap.Decode(filePath);
+
+                // Breite und Höhe abrufen
+                int width = skBitmap.Width;
+                int height = skBitmap.Height;
+
+                // Seitenverhältnis berechnen
+                float aspectRatio = (float)width / height;
+
 
                 // **Antwort mit zusätzlichen Informationen zurückgeben**
                 return Ok(new
@@ -57,6 +75,8 @@ namespace Maschinenampel.Server.Controllers
                     URL = filePath.Substring(9), // Entfernt ./wwwroot aus der URL
                     aspectRatio = Math.Round(aspectRatio, 4)
                 });
+
+
             }
             catch (Exception ex)
             {

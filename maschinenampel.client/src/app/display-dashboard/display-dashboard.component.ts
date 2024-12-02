@@ -15,6 +15,7 @@ import { lastValueFrom } from 'rxjs';
 export class DisplayDashboardComponent implements OnInit {
 
   isLoading: boolean = true; // Indikator, ob Daten noch geladen werden
+  AmplenExsit: boolean = false; // Indikator, ob es Ampeln auf dem aktuellen Board gibt
 
   selectedID: number = 0; // Hält die ID des ausgewählten Dashboards
   selectedNAME: string = ""; // Hält den Namen des ausgewählten Dashboards
@@ -70,23 +71,25 @@ export class DisplayDashboardComponent implements OnInit {
     await this.refreshBoards();
     await this.getAmpelnVonBoard();
 
+    if (this.AmplenExsit) { //WebSocket nur aufbauen, wenn Ampeln existieren
 
-    // WebSocket-Verbindung zum OPC-Controller herstellen
-    //this.webSocketService.connect(this.apiConfig.OPC_APIUrl + 'connectWebSocket', this.OPC_AddArray); // Server-Adresse
-    this.webSocketService.connect(this.apiConfig.OPC_APIUrl + 'connectWebSocket', this.OPC_AddArray); // Server-Adresse + OPC_AddArray
+        // WebSocket-Verbindung zum OPC-Controller herstellen
+        //this.webSocketService.connect(this.apiConfig.OPC_APIUrl + 'connectWebSocket', this.OPC_AddArray); // Server-Adresse
+        this.webSocketService.connect(this.apiConfig.OPC_APIUrl + 'connectWebSocket', this.OPC_AddArray); // Server-Adresse + OPC_AddArray
 
-    // Die empfangene Nachricht (event.data) wird als JSON interpretiert und in ein 2D-Array number[][] umgewandelt
-    this.webSocketService.socket.onmessage = (event) => {
-      this.OPC_BITArray = JSON.parse(event.data);
-      console.log('Neuste OPC Daten:', this.OPC_BITArray)
-    };
+        // Die empfangene Nachricht (event.data) wird als JSON interpretiert und in ein 2D-Array number[][] umgewandelt
+        this.webSocketService.socket.onmessage = (event) => {
+          this.OPC_BITArray = JSON.parse(event.data);
+          console.log('Neuste OPC Daten:', this.OPC_BITArray)
+        };
 
 
-    //Seitenverhältnis der Anzeige auf Bildschirm anpassen
-    setTimeout(() => {
-      this.fitScreenAspectRatio();
-    }, 0); // Verzögerung von 0 ms sorgt dafür, dass der DOM-Rendering abgeschlossen ist
+        //Seitenverhältnis der Anzeige auf Bildschirm anpassen
+        setTimeout(() => {
+          this.fitScreenAspectRatio();
+        }, 0); // Verzögerung von 0 ms sorgt dafür, dass der DOM-Rendering abgeschlossen ist
 
+    }
 
 
     this.isLoading = false; //Lade Spinner deaktivieren
@@ -103,6 +106,7 @@ export class DisplayDashboardComponent implements OnInit {
     this.selectedNAME = "";
     this.selectedIMG = "";
     this.aspectRatio = 0;
+    this.AmplenExsit = false;
 
     this.Ampeln = [];
 
@@ -166,6 +170,8 @@ export class DisplayDashboardComponent implements OnInit {
 
       // Wenn Ampeln vorhanden sind, konvertiere die COLOR- und OPC_BIT-Strings in Arrays
       if (this.Ampeln.length > 0) {
+        this.AmplenExsit = true;
+
         // Iteriere über alle Ampeln und konvertiere die Farb- und OPC-Bit-Strings
         for (let ampeln of this.Ampeln) {
           //  Wandle den COLORS-String in Array
