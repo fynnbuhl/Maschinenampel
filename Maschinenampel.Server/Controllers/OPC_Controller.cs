@@ -1,9 +1,11 @@
 ﻿//https://youtu.be/9ZD7cKIaxdM Video Tutorial
 
+using Maschinenampel.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.WebSockets;
 using System.Text;
+using System.Threading;
 
 
 namespace Maschinenampel.Server.Controllers

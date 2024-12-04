@@ -26,6 +26,7 @@ AppDomain.CurrentDomain.SetData("DataDirectory", Directory.GetCurrentDirectory()
 
 // Füge den OPC-Service hinzu
 builder.Services.AddSingleton<OPC_Service>();
+//builder.Services.AddHostedService<OPC_Service>();
 
 var app = builder.Build();
 
