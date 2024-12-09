@@ -2,7 +2,7 @@
 
 namespace Maschinenampel.Server.Services
 {
-      public class OPC_Service
+    public class OPC_Service
     {
 
         //TODO: Methode zum Verbinden mit OPC-Server (inkl. Passwort)
@@ -29,13 +29,5 @@ namespace Maschinenampel.Server.Services
 
     }
 }
-
-
-
-
-
-
-
-
 
 

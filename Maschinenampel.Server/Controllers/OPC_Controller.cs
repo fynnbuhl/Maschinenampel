@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
 
 
 namespace Maschinenampel.Server.Controllers
@@ -16,6 +15,68 @@ namespace Maschinenampel.Server.Controllers
     [RequireHttps]
     public class OPC_Controller : ControllerBase
     {
+
+
+        //Spielplatz
+        //#####################################################################
+
+
+        private readonly OPC_Service _opcService;
+
+        public OPC_Controller(OPC_Service opcService)
+        {
+            _opcService = opcService;
+        }
+
+
+
+        // Beispiel-Endpunkt zum Abrufen von Node-Daten
+        [HttpGet("read/{nodeId}")]
+        public async Task<IActionResult> ReadNode(string node)
+        {
+
+            //TODO:Methode verfügbar machen
+
+
+
+
+            try
+            {
+                var result = await _opcService.ReadNodeAsync(node);
+
+                return Ok(new
+                {
+                    Node = node,
+                    Value = result.Value,
+                    Timestamp = result.SourceTimestamp,
+                    Status = result.StatusCode
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Error = "Fehler beim Lesen des Knotens.",
+                    Details = ex.Message
+                });
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+        //#####################################################################
+
+
+
+
+
 
         string[][] OPC_AddrArray = new string[0][];
         int[][] OPC_BitArray;
