@@ -12,5 +12,5 @@
 
 INSERT INTO AmpelDB (DASHBOARD_ID, POS_X, POS_Y, SIZE, ColorCount, COLORS, OPC_Addr, OPC_TagList)
 VALUES
-    (1, 20, 20, 2, 3, 'green,red,blue', 'Maschine1.Steuerung1', 'TAG1,TAG2,TAG3'),
+    (1, 20, 20, 2, 3, 'green,red,blue', 'Beispiele für Datentyp.16 Bit-Gerät.B-Register', 'Boolean1,Boolean2,Boolean3'),
     (1, 40, 40, 2, 2, 'blue,red', 'Maschine2.Steuerung2', 'TAG1,TAG2');

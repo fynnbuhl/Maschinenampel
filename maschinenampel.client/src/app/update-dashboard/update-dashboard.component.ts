@@ -12,13 +12,16 @@ import { lastValueFrom } from 'rxjs';
 })
 export class UpdateDashboardComponent implements OnInit {
 
+
+  standardSize: number = 2; //Standart AMpel Größe
+
   selectedID: number = 0;
   selectedNAME: string = "";
   selectedIMG: string = "";
 
   POS_Xnew = 0;
   POS_Ynew = 0;
-  SIZEnew = 2;
+  SIZEnew = this.standardSize;
   colorsNew: string[] = [];
   OPC_Maschinenew = "";
   OPC_Steuergeraetnew = "";
@@ -144,7 +147,7 @@ export class UpdateDashboardComponent implements OnInit {
       // Erfolgreiche Antwort: Zurücksetzen der Eingabewerte auf Standardwerte
       this.POS_Xnew = 0;        // Standardwert für die X-Position
       this.POS_Ynew = 0;        // Standardwert für die Y-Position
-      this.SIZEnew = 2;         // Standardgröße der Ampel
+      this.SIZEnew = this.standardSize;         // Standardgröße der Ampel
       this.colorsNew = [];      // Leere Eingabe für Farben
       this.selectedColor = '#000000';
       this.OPC_Maschinenew = "";

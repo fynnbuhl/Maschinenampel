@@ -128,8 +128,8 @@
           </p>-->
         </td>
         <td class="opc_td_add">
-          <input type="text" class="short" required placeholder="Maschine" [(ngModel)]="OPC_Maschinenew" />
-          <input type="text" class="short" required placeholder="Steuergerät" [(ngModel)]="OPC_Steuergeraetnew" />
+          <input type="text" class="short" required placeholder="Maschine" [(ngModel)]="OPC_Maschinenew" />&bull;
+          <input type="text" class="short" required placeholder="Steuergerät" [(ngModel)]="OPC_Steuergeraetnew" />&bull;
           <input type="text" class="mid" required placeholder="Tag1,Tag2,..." [(ngModel)]="OPC_BITnew" />
         </td>
         <td class="save_td_add">
@@ -180,7 +180,7 @@
             <input [(ngModel)]="ampel.COLORS" type="text" class="large" required placeholder="Frabe,Farbe,Farbe..." value="{{ ampel.COLORS }}" />
           </td>
           <td class="opc_td_up">
-            <input [(ngModel)]="ampel.OPC_Addr" type="text" class="large" required placeholder="Maschine.Steuergerät." value="{{ ampel.OPC_Addr }}" />
+            <input [(ngModel)]="ampel.OPC_Addr" type="text" class="large" required placeholder="Maschine.Steuergerät." value="{{ ampel.OPC_Addr }}" />&bull;
             <input [(ngModel)]="ampel.OPC_TagList" type="text" class="large" required placeholder="Tag1,Tag2,..." value="{{ ampel.OPC_TagList }}" />
           </td>
 

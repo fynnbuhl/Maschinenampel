@@ -16,68 +16,6 @@ namespace Maschinenampel.Server.Controllers
     public class OPC_Controller : ControllerBase
     {
 
-
-        //Spielplatz
-        //#####################################################################
-
-
-        private readonly OPC_Service _opcService;
-
-        public OPC_Controller(OPC_Service opcService)
-        {
-            _opcService = opcService;
-        }
-
-
-
-        // Beispiel-Endpunkt zum Abrufen von Node-Daten
-        [HttpGet("read/{nodeId}")]
-        public async Task<IActionResult> ReadNode(string node)
-        {
-
-            //TODO:Methode verfügbar machen
-
-
-
-
-            try
-            {
-                var result = await _opcService.ReadNodeAsync(node);
-
-                return Ok(new
-                {
-                    Node = node,
-                    Value = result.Value,
-                    Timestamp = result.SourceTimestamp,
-                    Status = result.StatusCode
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    Error = "Fehler beim Lesen des Knotens.",
-                    Details = ex.Message
-                });
-            }
-        }
-
-
-
-
-
-
-
-
-
-
-        //#####################################################################
-
-
-
-
-
-
         string[][] OPC_AddrArray = new string[0][];
         int[][] OPC_BitArray;
 
@@ -89,7 +27,7 @@ namespace Maschinenampel.Server.Controllers
         public async Task ConnectWebSocket()
         {
 
-            // Hole die URL-Parameter, die das Address-Array enthalten
+            // Hole den URL-Parameter, der das Address-Array enthält
             var data = HttpContext.Request.Query["addresses"].ToString();
 
             if (!string.IsNullOrEmpty(data))
@@ -119,11 +57,11 @@ namespace Maschinenampel.Server.Controllers
 
                     if (OPC_BitArray != null)
                     {
-                        Console.WriteLine("Initalisierte Bits:");
+                        /*Console.WriteLine("Initalisierte Bits:");
                         foreach (var row in OPC_BitArray)
                         {
                             Console.WriteLine(string.Join(", ", row));
-                        }
+                        }*/
                     } else 
                     {
                         Console.WriteLine("OPC_BitArray ist noch nicht initialisiert.");
@@ -195,13 +133,14 @@ namespace Maschinenampel.Server.Controllers
                 while (webSocket.State == WebSocketState.Open)
                 {
                         // Diese Methode wird verwendet, um die Adressen in Bit-zustände zu übersetzten
-                        OPC_BitArray = UpdateBits(OPC_AddrArray, OPC_BitArray);
+                        OPC_BitArray = await UpdateBits(OPC_AddrArray, OPC_BitArray);
 
-                        Console.WriteLine("neue Bits:");
+                        //DEBUG ONLY
+                        /*Console.WriteLine("neue Bits:");
                         foreach (var row in OPC_BitArray)
                         {
                             Console.WriteLine(string.Join(", ", row));
-                        }
+                        }*/
                     
                         string json = JsonConvert.SerializeObject(OPC_BitArray); // Wandle das aktuelle BitArray in einen JSON-String um, um es an den Client zu senden
                         var bytes = Encoding.UTF8.GetBytes(json); // Wandle den JSON-String in Bytes um (weil WebSockets nur Binärdaten übertragen können)
@@ -235,10 +174,10 @@ namespace Maschinenampel.Server.Controllers
 
 
         // Diese Methode wird verwendet, um jeder übergebenen Adresse den aktuellen Bitzustand zuzuweisen
-        private int [][] UpdateBits(string[][] OPC_Addr, int[][] OPC_Bits)
+        private async Task<int [][]> UpdateBits(string[][] OPC_Addr, int[][] OPC_Bits)
         {
                                 // Erstelle eine Instanz des Random-Objekts, um Zufallszahlen zu generieren
-                                var rand = new Random();
+                                //var rand = new Random();
 
             // Iteriere durch das 2D-Array
             for (int i = 0; i < OPC_Addr.Length; i++)
@@ -247,22 +186,23 @@ namespace Maschinenampel.Server.Controllers
                 for (int j = 0; j < OPC_Addr[i].Length; j++)
                 {
 
-                    //Löschen
+                                //Löschen
                                 // 50% Wahrscheinlichkeit, den Wert zu ändern
                                 // Wenn der Zufallswert 0 oder 1 ist, dann wird das aktuelle Element geändert
-                                if (rand.Next(2) == 0)
+                                /*if (rand.Next(2) == 0)
                                 {
                                     // Ändere den Wert von 1 auf 0 und von 0 auf 1
                                     // Dies erfolgt durch eine einfache Bedingung
                                     OPC_Bits[i][j] = OPC_Bits[i][j] == 1 ? 0 : 1;
                         
-                                }
+                                }*/
 
 
-                    Console.WriteLine($"POS: {i},{j}, Addr: {OPC_Addr[i][j]}");
 
-                    //TODO: private Instanzvariable _opcService vom Typ OpcService deklariert und druch einen Constructor eine Instanz des OpcService zu speichern
-                    //OPC_Bits[i][j] = _opcService.OPCgetBitformNode( OPC_Addr[i][j] );
+                    //DEBUG ONLY
+                    //Console.WriteLine($"POS: {i},{j}, Addr: {OPC_Addr[i][j]}");
+
+                    OPC_Bits[i][j] = await ReadNode(OPC_Addr[i][j]);
                 }
             }
 
@@ -275,6 +215,62 @@ namespace Maschinenampel.Server.Controllers
 
 
 
+        private readonly OPC_Service _opcService; // Service für das Abrufen von OPC-Daten
+        private bool OPC_dataValue; // Speichert den Wert des OPC-Knotens (true/false)
+        private int OPC_BitValue; // Speichert den umgewandelten Wert (0 oder 1)
+
+        // Konstruktor der Klasse, der den OPC_Service für den Zugriff auf die OPC-Daten injiziert
+        public OPC_Controller(OPC_Service opcService)
+        {
+            _opcService = opcService;
+        }
+
+
+        // Diese Methode gibt den Wert des OPC-Nodes als Integer zurück (0 für false, 1 für true).
+        private async Task<int> ReadNode(string nodeName)
+        {
+            try
+            {
+                // Ruft die Methode ReadNodeAsync aus dem OPC-Service auf, um den aktuellen Wert des OPC-Knotens zu lesen.
+                // Der Wert wird als Boolean (true/false) gespeichert.
+                OPC_dataValue = await _opcService.ReadNodeAsync(nodeName);
+
+                // Wandelt den booleschen Wert in einen Integer um:
+                // - Wenn der Wert "true" ist, wird 1 zurückgegeben.
+                // - Wenn der Wert "false" ist, wird 0 zurückgegeben.
+                OPC_BitValue = OPC_dataValue ? 1 : 0;
+                //Console.WriteLine(OPC_BitValue);
+                // Gibt den umgewandelten Integer-Wert zurück (entweder 0 oder 1).
+
+                return OPC_BitValue;
+            }
+            catch (Exception ex)
+            {
+                // Wenn ein Fehler auftritt (z. B. Verbindungsprobleme oder ungültiger Node-Name)
+                Console.WriteLine($"Fehler beim interpretieren vom OPC-Node: {ex.Message}");
+                return -2; // Rückgabe eines Fehlerwertes, wenn etwas schief geht
+            }
+        }
+
+
+
+
+        // DEBUG ONLY
+        // HTTP GET-Methode für den API-Endpunkt "/readSNode".
+        // Diese Methode wird aufgerufen, wenn ein GET-Request an den Endpunkt gesendet wird.
+        [HttpGet("readSNode")]
+        public async Task<IActionResult> ApiReadNode(string nodeName)
+        {
+            try
+            {
+                // Ruft die Methode ReadNode auf, die den Wert für den angegebenen Node-Namen liest und umwandelt.
+                return Ok(new { Value = await ReadNode(nodeName) });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
 
 
 

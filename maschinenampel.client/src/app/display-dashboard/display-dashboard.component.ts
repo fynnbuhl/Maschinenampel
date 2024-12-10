@@ -81,7 +81,7 @@ export class DisplayDashboardComponent implements OnInit {
         this.webSocketService.socket.onmessage = (event) => {
           this.OPC_BITArray = JSON.parse(event.data);
           console.log('Neuste OPC Daten:', this.OPC_BITArray)
-        };
+      };
 
 
         //Seitenverhältnis der Anzeige auf Bildschirm anpassen
@@ -142,7 +142,9 @@ export class DisplayDashboardComponent implements OnInit {
 
   @HostListener('window:resize', ['$event'])
   onResize(event: Event) {
-    this.fitScreenAspectRatio();
+    if (this.AmplenExsit) {
+      this.fitScreenAspectRatio();
+    }
   }
 
 

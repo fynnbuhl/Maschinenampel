@@ -14,6 +14,8 @@ namespace Maschinenampel.Server.Services
         private Session _session;
         private ApplicationConfiguration _appConfig;
 
+        private bool _isInitialized = false;
+
         public OPC_Service(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -26,9 +28,8 @@ namespace Maschinenampel.Server.Services
             try
             {
                 // Debug-Log: Konfigurationseinstellungen ausgeben
-                Console.WriteLine("Starte die OPC UA Verbindung...");
-                Console.WriteLine($"Server URL: {_opcServerConfiguration.Url}");
-                Console.WriteLine($"Security Mode: {_opcServerConfiguration.SecurityMode}");
+                //Console.WriteLine($"Server URL: {_opcServerConfiguration.Url}");
+                //Console.WriteLine($"Security Mode: {_opcServerConfiguration.SecurityMode}");
 
                 // Anwendungskonfiguration erstellen
                 _appConfig = new ApplicationConfiguration()
@@ -61,7 +62,6 @@ namespace Maschinenampel.Server.Services
                 Console.WriteLine($"Verwendeter Sicherheitsmodus: {securityMode}");
 
                 // Endpoint aus Server-URL und SecurityMode auswählen
-                Console.WriteLine("Wähle Endpoint für den Server...");
                 var endpointDescription = CoreClientUtils.SelectEndpoint(
                     _opcServerConfiguration.Url,
                     securityMode != MessageSecurityMode.None);
@@ -78,26 +78,28 @@ namespace Maschinenampel.Server.Services
                 /*var userIdentity = new UserIdentity(
                     _opcServerConfiguration.Username,
                     _opcServerConfiguration.Password
-                );*/
+                );
+                Console.WriteLine("Verwende Benutzerdaten zur Authentifizierung.");*/
 
-                
+
 
                 // Session erstellen
-                Console.WriteLine("Erstelle Session und stelle Verbindung her...");
                 _session = await Session.Create(
                     _appConfig,
                     endpoint,
                     false,
-                    "MySession",
+                    "Session1",
                     60000,
                     userIdentity,
                     null);
 
+                _isInitialized = true;
+
                 Console.WriteLine("Verbindung zum OPC UA Server erfolgreich hergestellt.");
 
                 //BSP Node auslesen. DEBUG ONLY
-                //await ReadNodeAsync("ns=2;s=Beispiele für Datentyp.8 Bit-Gerät.Z-Register.String1");
-                await ReadNodeAsync("Beispiele für Datentyp.8 Bit-Gerät.Z-Register.String1");
+                //await ReadNodeAsync("Beispiele für Datentyp.16 Bit-Gerät.B-Register.Boolean1");
+                
             }
             catch (Exception ex)
             {
@@ -126,6 +128,7 @@ namespace Maschinenampel.Server.Services
             {
                 await Task.Run(() => _session.Close());
                 _session.Dispose();
+                _isInitialized = false;
                 Console.WriteLine("Verbindung zum OPC UA Server getrennt.");
             }
         }
@@ -136,11 +139,12 @@ namespace Maschinenampel.Server.Services
 
 
 
-        public async Task<DataValue> ReadNodeAsync(string node)
+        public async Task<bool> ReadNodeAsync(string node)
         {
             //Node-ID aus namespace und Adresse im Stringformat zusammensetzten
             //https://stackoverflow.com/questions/57562971/what-is-the-significance-of-ns-2s-in-an-opc-node-path
             string nodeId = "ns=" + _opcServerConfiguration.Opc_Namespace + ";s=" + node;
+
             try
             {
                 // Sicherstellen, dass die Session korrekt initialisiert ist
@@ -180,15 +184,22 @@ namespace Maschinenampel.Server.Services
 
 
 
-                // Durchlaufen der dataValues und Ausgabe der Details
-                foreach (var dataValue in dataValues)
+                // Durchlaufen der dataValues und Ausgabe der Details. DEBUG ONLY
+                /*foreach (var dataValue in dataValues)
                 {
                     Console.WriteLine($"NodeId {nodeId}: {dataValue.Value}");
+                }*/
+
+
+                // Erfolgreiche Rückgabe des Werts als bool
+                if (dataValues[0].Value is bool booleanValue)
+                {
+                    return booleanValue;
                 }
-
-
-                // Erfolgreiche Rückgabe des Werts
-                return dataValues[0];
+                else
+                {
+                    throw new InvalidOperationException("Der Wert ist kein boolescher Typ.");
+                }
 
             }
             catch (Exception ex)
@@ -198,6 +209,10 @@ namespace Maschinenampel.Server.Services
                 throw;
             }
         }
+
+
+
+
 
 
     }
