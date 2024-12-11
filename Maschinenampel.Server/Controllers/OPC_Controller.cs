@@ -210,28 +210,38 @@ namespace Maschinenampel.Server.Controllers
                     nodeNames.Add(OPC_Addr[i][j]);
                 }
 
-                // Ruft die Methode `ReadNodesAsync` auf, die alle Adressen in `nodeNames` gleichzeitig ausliest.
-                // Ergebnis ist ein Dictionary<string, bool>, das den Node-Namen mit seinem aktuellen Wert (true/false) verknüpft.
-                var nodeResults = await _opcService.ReadNodesAsync(nodeNames);
 
-                // Dictionary zur Zwischenspeicherung der Ergebnisse als Integer-Werte
-                // (0 für false, 1 für true).
-                var intResults = new Dictionary<string, int>();
-
-                // Durchlaufen der Ergebnisse von `ReadNodesAsync`
-                foreach (var result in nodeResults)
+                try
                 {
-                    // Konvertiert den booleschen Wert (`result.Value`) in einen Integer-Wert (0 oder 1)
-                    // und speichert diesen im `intResults`-Dictionary, wobei die Node-ID als Schlüssel verwendet wird.
-                    intResults[result.Key] = result.Value ? 1 : 0;
+                    // Ruft die Methode `ReadNodesAsync` auf, die alle Adressen in `nodeNames` gleichzeitig ausliest.
+                    // Ergebnis ist ein Dictionary<string, bool>, das den Node-Namen mit seinem aktuellen Wert (true/false) verknüpft.
+                    var nodeResults = await _opcService.ReadNodesAsync(nodeNames);
+                                    
+                    // Dictionary zur Zwischenspeicherung der Ergebnisse als Integer-Werte
+                    // (0 für false, 1 für true).
+                    var intResults = new Dictionary<string, int>();
 
-                    // Weist die konvertierten Integer-Werte der aktuellen Zeile `OPC_Bits[i]` zu.
-                    // `intResults.Values.ToArray()` konvertiert die Werte des Dictionaries in ein Array.
-                    OPC_Bits[i] = intResults.Values.ToArray();
+                    // Durchlaufen der Ergebnisse von `ReadNodesAsync`
+                    foreach (var result in nodeResults)
+                    {
+                        // Konvertiert den booleschen Wert (`result.Value`) in einen Integer-Wert (0 oder 1)
+                        // und speichert diesen im `intResults`-Dictionary, wobei die Node-ID als Schlüssel verwendet wird.
+                        intResults[result.Key] = result.Value ? 1 : 0;
+
+                        // Weist die konvertierten Integer-Werte der aktuellen Zeile `OPC_Bits[i]` zu.
+                        // `intResults.Values.ToArray()` konvertiert die Werte des Dictionaries in ein Array.
+                        OPC_Bits[i] = intResults.Values.ToArray();
+                    }
+
+                    // Leert die Liste `nodeNames`, damit sie für die nächste Zeile (nächsten Durchlauf) neu befüllt werden kann.
+                    nodeNames.Clear();
+
                 }
-
-                // Leert die Liste `nodeNames`, damit sie für die nächste Zeile (nächsten Durchlauf) neu befüllt werden kann.
-                nodeNames.Clear();
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Fehler beim Interpretieren der Nodes: {ex.Message}");
+                    OPC_Bits[i] = [-2];
+                }
             }
 
             // Gibt das aktualisierte 2D-Array zurück, das die konvertierten Integer-Bitwerte für alle Adressen enthält.
