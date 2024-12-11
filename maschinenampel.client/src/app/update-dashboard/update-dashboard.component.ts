@@ -108,6 +108,12 @@ export class UpdateDashboardComponent implements OnInit {
     // OPC-Bits in ein Array umwandeln, ähnlich wie bei den Farben
     this.BitArraynew = this.OPC_BITnew.trim().split(',').filter(bit => bit.trim().length > 0);
 
+    // Validierung der Nutzereingabe: Überprüfe, ob es doppelt gelistetet OPC-Tags gibt
+    if (this.hasDuplicates(this.BitArraynew)) {
+      alert("Es gibt doppelte OPC-Tags!");
+      return
+    }
+
     // Validierung der Nutzereingabe: Überprüfe, ob die Anzahl der Farben mit der Anzahl der OPC-Bits übereinstimmt
     if (this.colorsNew.length != this.BitArraynew.length) {
       console.log("Colors/OPC-Tags: Anzahl stimmt nicht überein!");
@@ -212,6 +218,12 @@ export class UpdateDashboardComponent implements OnInit {
 
     // OPC-Bits ebenfalls in ein Array umwandeln, ähnlich wie bei den Farben
     this.BitArray = ampel.OPC_TagList.trim().split(',').filter((item: string) => item !== '');
+
+    // Validierung der Nutzereingabe: Überprüfe, ob es doppelt gelistetet OPC-Tags gibt
+    if (this.hasDuplicates(this.BitArray)) {
+      alert("Es gibt doppelte OPC-Tags!");
+      return
+    }
 
     // Validierung der Nutzereingabe: Überprüfe, ob die Anzahl der Farben mit der Anzahl der OPC-Bits übereinstimmt
     if (this.colorArray.length != this.BitArray.length) {
@@ -336,6 +348,10 @@ export class UpdateDashboardComponent implements OnInit {
 
 
 
+  //Zur überprüfung ob es doppelte Einträge gibt
+  hasDuplicates(arr: string[]): boolean {
+    return new Set(arr).size !== arr.length;
+  }
 
 
 

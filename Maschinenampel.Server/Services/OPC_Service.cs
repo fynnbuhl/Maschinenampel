@@ -6,8 +6,8 @@ namespace Maschinenampel.Server.Services
 {
     public class OPC_Service : IHostedService
     {
-        //TODO: OPC-Login
-        //Aktuell: Anonym, ohne Sicherheit (none)
+        //OPC-Login Aktuell:
+        //Anonym, ohne Sicherheit (none)
 
         private readonly IConfiguration _configuration;
         private readonly OPCServerConfiguration _opcServerConfiguration;
@@ -72,7 +72,7 @@ namespace Maschinenampel.Server.Services
                 var userIdentity = new UserIdentity();  // Anonyme Authentifizierung
                 Console.WriteLine("Verwende anonyme Authentifizierung.");
 
-                // Benutzerdaten aus der Konfiguration laden
+                // Benutzerdaten aus der Konfiguration laden. Noch nicht getestet!
                 /*var userIdentity = new UserIdentity(
                     _opcServerConfiguration.Username,
                     _opcServerConfiguration.Password
@@ -93,21 +93,6 @@ namespace Maschinenampel.Server.Services
 
 
                 Console.WriteLine("Verbindung zum OPC UA Server erfolgreich hergestellt.");
-
-                //BSP Node auslesen. DEBUG ONLY
-                //await ReadNodeAsync("Beispiele für Datentyp.16 Bit-Gerät.B-Register.Boolean1");
-
-
-
-
-
-                
-
-
-
-
-
-
 
                 }
             catch (Exception ex)
@@ -145,95 +130,7 @@ namespace Maschinenampel.Server.Services
 
 
 
-
-        //nur einen Node auslesen
-        public async Task<bool> ReadNodeAsync(string node)
-        {
-            //Node-ID aus namespace und Adresse im Stringformat zusammensetzten
-            //https://stackoverflow.com/questions/57562971/what-is-the-significance-of-ns-2s-in-an-opc-node-path
-            string nodeId = "ns=" + _opcServerConfiguration.Opc_Namespace + ";s=" + node;
-
-            try
-            {
-                // Sicherstellen, dass die Session korrekt initialisiert ist
-                if (_session == null)
-                {
-                    throw new InvalidOperationException("Die OPC UA Session ist nicht initialisiert.");
-                }
-
-                // NodeId erstellen
-                var nodeToRead = new ReadValueId
-                {
-                    NodeId = new NodeId(nodeId),
-                    AttributeId = Attributes.Value
-                };
-
-                // Leseoperation durchführen
-                var readResult = _session.Read(
-                    null,
-                    0,
-                    TimestampsToReturn.Both,
-                    new ReadValueIdCollection { nodeToRead },
-                    out var dataValues,
-                    out var diagnosticInfos
-                );
-
-                // Überprüfen, ob das Ergebnis gültig ist
-                if (dataValues == null || dataValues.Count == 0)
-                {
-                    throw new Exception("Fehler: Die Antwort enthält keine Werte.");
-                }
-
-                // Überprüfung des Statuscodes
-                if (dataValues[0].StatusCode != Opc.Ua.StatusCodes.Good)
-                {
-                    throw new Exception($"Fehler beim Lesen des Nodes: {dataValues[0]?.StatusCode}");
-                }
-
-
-
-                // Durchlaufen der dataValues und Ausgabe der Details. DEBUG ONLY
-                /*foreach (var dataValue in dataValues)
-                {
-                    Console.WriteLine($"NodeId {nodeId}: {dataValue.Value}");
-                }
-                return true;*/
-
-
-                // Erfolgreiche Rückgabe des Werts als bool
-                if (dataValues[0].Value is bool booleanValue)
-                {
-                    return booleanValue;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Der Wert ist kein boolescher Typ.");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                // Fehlerprotokollierung
-                Console.WriteLine($"Fehler beim Lesen des Nodes {nodeId}: {ex.Message}");
-                throw;
-            }
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        //mehrer Nodes gleichzeitig auslesen
+        //mehrere Nodes gleichzeitig auslesen
         public async Task<Dictionary<string, bool>> ReadNodesAsync(IEnumerable<string> nodes)
         {
             // Dictionary für die Ergebnisse
@@ -332,9 +229,9 @@ namespace Maschinenampel.Server.Services
     {
         //Appsettings-Variablen vorbereiten
         public string Url { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public string Username { get; set; } //derzeit nicht verwendet
+        public string Password { get; set; } //derzeit nicht verwendet
         public string SecurityMode { get; set; } = "None"; // Standard: Keine Sicherheit
-        public string Opc_Namespace { get; set; } = "2";
+        public string Opc_Namespace { get; set; } = "2"; // Standard: NS=2
     }
 }

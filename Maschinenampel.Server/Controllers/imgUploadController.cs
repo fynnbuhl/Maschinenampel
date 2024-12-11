@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-//using SixLabors.ImageSharp;
 using SkiaSharp;
 
 
@@ -45,18 +44,6 @@ namespace Maschinenampel.Server.Controllers
                     // Kopiert die hochgeladene Datei in den Stream
                     await file.CopyToAsync(stream);
                 }
-
-
-
-
-                // **Bildgröße auslesen mit ImageSharp**
-                /*
-                using var image = await Image.LoadAsync(filePath); // Bild laden
-                int width = image.Width;
-                int height = image.Height;
-                float aspectRatio = (float)width / height; // Seitenverhältnis berechnen
-                */
-
 
                 // Bild mit SkiaSharp laden
                 using var skBitmap = SKBitmap.Decode(filePath);

@@ -16,9 +16,23 @@ namespace Maschinenampel.Server.Controllers
     public class OPC_Controller : ControllerBase
     {
 
+        private readonly OPC_Service _opcService; // Service für das Abrufen von OPC-Daten
+        private readonly IConfiguration _configuration;
+        private readonly OPCServerConfiguration _opcServerConfiguration;
+
+        // Konstruktor der Klasse, der den OPC_Service für den Zugriff auf die OPC-Daten injiziert
+        public OPC_Controller(OPC_Service opcService, IConfiguration configuration)
+        {
+            _opcService = opcService;
+            _configuration = configuration;
+            _opcServerConfiguration = new OPCServerConfiguration();
+            configuration.GetSection("OPCServer").Bind(_opcServerConfiguration);
+        }
+
+
+
         string[][] OPC_AddrArray = new string[0][];
         int[][] OPC_BitArray;
-
 
 
         // Diese Methode wird durch eine GET-Anfrage an 'api/websocket/connectWebSocket' aufgerufen.
@@ -93,6 +107,9 @@ namespace Maschinenampel.Server.Controllers
             }
         }
 
+
+
+
         // Diese Methode verarbeitet die WebSocket-Verbindung und sendet ständig aktualisierte Daten an den Client
         private async Task HandleWebSocketAsync(WebSocket webSocket)
         {
@@ -153,11 +170,12 @@ namespace Maschinenampel.Server.Controllers
                             true,
                             CancellationToken.None
                         );
-                    
 
-                    // Verzögerung von 0,5 Sekunden, bevor der Vorgang wiederholt wird
-                    // Das ermöglicht es, dass der Client alle 0,5 Sekunden neue Daten empfängt
-                    await Task.Delay(500);
+
+                    // Verzögerung von x Sekunden, bevor der Vorgang wiederholt wird
+                    // siehe appsettings.json
+                    //Console.WriteLine("UpdateIntervall: " + _opcServerConfiguration.UpdateIntervall_ms);
+                    await Task.Delay(_opcServerConfiguration.UpdateIntervall_ms);
                 }
             }
             finally
@@ -169,136 +187,55 @@ namespace Maschinenampel.Server.Controllers
 
         }
 
-        
 
 
 
-        // Diese Methode wird verwendet, um jeder übergebenen Adresse den aktuellen Bitzustand zuzuweisen
-        private async Task<int [][]> UpdateBits(string[][] OPC_Addr, int[][] OPC_Bits)
+
+        // Eine Liste zur Speicherung der Node-Namen (Adressen), die später gelesen werden sollen
+        private List<string> nodeNames = new List<string> { };
+
+        // Diese Methode wird verwendet, um die aktuellen Bitzustände (true/false als 1/0) der übergebenen Adressen abzurufen und in einem 2D-Array (int[][]) zu speichern.
+        private async Task<int[][]> UpdateBits(string[][] OPC_Addr, int[][] OPC_Bits)
         {
-                                // Erstelle eine Instanz des Random-Objekts, um Zufallszahlen zu generieren
-                                //var rand = new Random();
-
-            // Iteriere durch das 2D-Array
+            // Äußere Schleife: Iteration durch die Zeilen des 2D-Arrays OPC_Addr
             for (int i = 0; i < OPC_Addr.Length; i++)
             {
-                // Iteriere durch jede Zeile des Arrays
+                // Innere Schleife: Iteration durch jede Spalte (Adresse) innerhalb der aktuellen Zeile
                 for (int j = 0; j < OPC_Addr[i].Length; j++)
                 {
+                    // DEBUG-Log: Gibt die aktuelle Position und Adresse in der Konsole aus
+                    // Console.WriteLine($"POS: {i},{j}, Addr: {OPC_Addr[i][j]}");
 
-                                //Löschen
-                                // 50% Wahrscheinlichkeit, den Wert zu ändern
-                                // Wenn der Zufallswert 0 oder 1 ist, dann wird das aktuelle Element geändert
-                                /*if (rand.Next(2) == 0)
-                                {
-                                    // Ändere den Wert von 1 auf 0 und von 0 auf 1
-                                    // Dies erfolgt durch eine einfache Bedingung
-                                    OPC_Bits[i][j] = OPC_Bits[i][j] == 1 ? 0 : 1;
-                        
-                                }*/
-
-
-
-                    //DEBUG ONLY
-                    //Console.WriteLine($"POS: {i},{j}, Addr: {OPC_Addr[i][j]}");
-
-                    OPC_Bits[i][j] = await ReadNode(OPC_Addr[i][j]);
+                    // Fügt die aktuelle Adresse zur Liste `nodeNames` hinzu, um später gelesen zu werden
+                    nodeNames.Add(OPC_Addr[i][j]);
                 }
-            }
 
-            return OPC_Bits;
-        }
-
-
-
-
-
-
-
-        private readonly OPC_Service _opcService; // Service für das Abrufen von OPC-Daten
-
-        // Konstruktor der Klasse, der den OPC_Service für den Zugriff auf die OPC-Daten injiziert
-        public OPC_Controller(OPC_Service opcService)
-        {
-            _opcService = opcService;
-        }
-
-
-        // Diese Methode gibt den Wert des OPC-Nodes als Integer zurück (0 für false, 1 für true).
-        private async Task<int> ReadNode(string nodeName)
-        {
-            try
-            {
-                // Ruft die Methode ReadNodeAsync aus dem OPC-Service auf, um den aktuellen Wert des OPC-Knotens zu lesen.
-                // Der Wert wird als Boolean (true/false) gespeichert.
-                bool OPC_dataValue = await _opcService.ReadNodeAsync(nodeName);
-
-                Console.WriteLine(OPC_dataValue);
-
-                // Wandelt den booleschen Wert in einen Integer um und gibt ihn zurück
-                return OPC_dataValue ? 1 : 0;
-            }
-            catch (Exception ex)
-            {
-                // Wenn ein Fehler auftritt (z. B. Verbindungsprobleme oder ungültiger Node-Name)
-                Console.WriteLine($"Fehler beim interpretieren vom OPC-Node: {ex.Message}");
-                return -2; // Rückgabe eines Fehlerwertes, wenn etwas schief geht
-            }
-        }
-
-
-        private async Task<Dictionary<string, int>> ReadNodes(List<string> nodeNames)
-        {
-            try
-            {
-                // Ruft die Methode ReadNodesAsync aus dem Service auf, um die Werte der Nodes zu lesen
+                // Ruft die Methode `ReadNodesAsync` auf, die alle Adressen in `nodeNames` gleichzeitig ausliest.
+                // Ergebnis ist ein Dictionary<string, bool>, das den Node-Namen mit seinem aktuellen Wert (true/false) verknüpft.
                 var nodeResults = await _opcService.ReadNodesAsync(nodeNames);
 
-                // Dictionary zur Rückgabe der Integer-Werte (0 = false, 1 = true)
+                // Dictionary zur Zwischenspeicherung der Ergebnisse als Integer-Werte
+                // (0 für false, 1 für true).
                 var intResults = new Dictionary<string, int>();
 
+                // Durchlaufen der Ergebnisse von `ReadNodesAsync`
                 foreach (var result in nodeResults)
                 {
-                    // Wandelt den booleschen Wert in einen Integer um und fügt ihn dem Dictionary hinzu
+                    // Konvertiert den booleschen Wert (`result.Value`) in einen Integer-Wert (0 oder 1)
+                    // und speichert diesen im `intResults`-Dictionary, wobei die Node-ID als Schlüssel verwendet wird.
                     intResults[result.Key] = result.Value ? 1 : 0;
+
+                    // Weist die konvertierten Integer-Werte der aktuellen Zeile `OPC_Bits[i]` zu.
+                    // `intResults.Values.ToArray()` konvertiert die Werte des Dictionaries in ein Array.
+                    OPC_Bits[i] = intResults.Values.ToArray();
                 }
 
-                // Rückgabe der Ergebnisse als Dictionary
-                return intResults;
+                // Leert die Liste `nodeNames`, damit sie für die nächste Zeile (nächsten Durchlauf) neu befüllt werden kann.
+                nodeNames.Clear();
             }
-            catch (Exception ex)
-            {
-                // Fehlerprotokollierung
-                Console.WriteLine($"Fehler beim Interpretieren der OPC-Nodes: {ex.Message}");
 
-                // Rückgabe eines leeren Dictionaries oder einer speziellen Fehlermeldung
-                return new Dictionary<string, int>
-                {
-                    { "Error", -2 }
-                };
-            }
-        }
-
-
-
-
-
-
-
-        // DEBUG ONLY
-        //einzeneler Node
-        [HttpPost("readSNode")]
-        public async Task<IActionResult> ApiReadNode(string nodeName)
-        {
-            try
-            {
-                // Ruft die Methode ReadNode auf, die den Wert für den angegebenen Node-Namen liest und umwandelt.
-                return Ok(new { Value = await ReadNode(nodeName) });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            // Gibt das aktualisierte 2D-Array zurück, das die konvertierten Integer-Bitwerte für alle Adressen enthält.
+            return OPC_Bits;
         }
 
 
@@ -309,13 +246,26 @@ namespace Maschinenampel.Server.Controllers
         // DEBUG ONLY
         //mehrere Nodes
         [HttpPost("readSNodeList")]
-        public async Task<IActionResult> ApiReadNodeList([FromBody] List<string> nodeNames)
+        public async Task<IActionResult> ApiReadNodeList([FromBody] List<string> nodeNames) //BSP: ["Beispiele für Datentyp.16 Bit-Gerät.B-Register.Boolean1"]
         {
 
             try
             {
-                // Ruft die Methode ReadNode auf, die den Wert für den angegebenen Node-Namen liest und umwandelt.
-                return Ok(new { Value = await ReadNodes(nodeNames) });
+
+                // Ruft die Methode ReadNodesAsync aus dem Service auf, um die Werte der Nodes zu lesen
+                var nodeResults = await _opcService.ReadNodesAsync(nodeNames);
+
+                // Dictionary zur Rückgabe der Integer-Werte (0 = false, 1 = true)
+                var intResults = new Dictionary<string, int>();
+
+                foreach (var result in nodeResults)
+                {
+                    // Wandelt den booleschen Wert in einen Integer um und fügt ihn dem Dictionary hinzu
+                    intResults[result.Key] = result.Value ? 1 : 0;
+                    Console.WriteLine(intResults[result.Key]);
+                }
+
+                return Ok(new { Values = intResults });
             }
             catch (Exception ex)
             {
@@ -326,5 +276,12 @@ namespace Maschinenampel.Server.Controllers
 
 
 
+    }
+
+
+    public class OPCServerConfiguration
+    {
+        //Appsettings-Variablen vorbereiten
+        public int UpdateIntervall_ms { get; set; }
     }
 }
