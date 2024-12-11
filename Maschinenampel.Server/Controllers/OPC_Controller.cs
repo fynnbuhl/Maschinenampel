@@ -216,8 +216,6 @@ namespace Maschinenampel.Server.Controllers
 
 
         private readonly OPC_Service _opcService; // Service für das Abrufen von OPC-Daten
-        private bool OPC_dataValue; // Speichert den Wert des OPC-Knotens (true/false)
-        private int OPC_BitValue; // Speichert den umgewandelten Wert (0 oder 1)
 
         // Konstruktor der Klasse, der den OPC_Service für den Zugriff auf die OPC-Daten injiziert
         public OPC_Controller(OPC_Service opcService)
@@ -233,16 +231,12 @@ namespace Maschinenampel.Server.Controllers
             {
                 // Ruft die Methode ReadNodeAsync aus dem OPC-Service auf, um den aktuellen Wert des OPC-Knotens zu lesen.
                 // Der Wert wird als Boolean (true/false) gespeichert.
-                OPC_dataValue = await _opcService.ReadNodeAsync(nodeName);
+                bool OPC_dataValue = await _opcService.ReadNodeAsync(nodeName);
 
-                // Wandelt den booleschen Wert in einen Integer um:
-                // - Wenn der Wert "true" ist, wird 1 zurückgegeben.
-                // - Wenn der Wert "false" ist, wird 0 zurückgegeben.
-                OPC_BitValue = OPC_dataValue ? 1 : 0;
-                //Console.WriteLine(OPC_BitValue);
-                // Gibt den umgewandelten Integer-Wert zurück (entweder 0 oder 1).
+                Console.WriteLine(OPC_dataValue);
 
-                return OPC_BitValue;
+                // Wandelt den booleschen Wert in einen Integer um und gibt ihn zurück
+                return OPC_dataValue ? 1 : 0;
             }
             catch (Exception ex)
             {
@@ -253,18 +247,75 @@ namespace Maschinenampel.Server.Controllers
         }
 
 
+        private async Task<Dictionary<string, int>> ReadNodes(List<string> nodeNames)
+        {
+            try
+            {
+                // Ruft die Methode ReadNodesAsync aus dem Service auf, um die Werte der Nodes zu lesen
+                var nodeResults = await _opcService.ReadNodesAsync(nodeNames);
+
+                // Dictionary zur Rückgabe der Integer-Werte (0 = false, 1 = true)
+                var intResults = new Dictionary<string, int>();
+
+                foreach (var result in nodeResults)
+                {
+                    // Wandelt den booleschen Wert in einen Integer um und fügt ihn dem Dictionary hinzu
+                    intResults[result.Key] = result.Value ? 1 : 0;
+                }
+
+                // Rückgabe der Ergebnisse als Dictionary
+                return intResults;
+            }
+            catch (Exception ex)
+            {
+                // Fehlerprotokollierung
+                Console.WriteLine($"Fehler beim Interpretieren der OPC-Nodes: {ex.Message}");
+
+                // Rückgabe eines leeren Dictionaries oder einer speziellen Fehlermeldung
+                return new Dictionary<string, int>
+                {
+                    { "Error", -2 }
+                };
+            }
+        }
+
+
+
+
+
 
 
         // DEBUG ONLY
-        // HTTP GET-Methode für den API-Endpunkt "/readSNode".
-        // Diese Methode wird aufgerufen, wenn ein GET-Request an den Endpunkt gesendet wird.
-        [HttpGet("readSNode")]
+        //einzeneler Node
+        [HttpPost("readSNode")]
         public async Task<IActionResult> ApiReadNode(string nodeName)
         {
             try
             {
                 // Ruft die Methode ReadNode auf, die den Wert für den angegebenen Node-Namen liest und umwandelt.
                 return Ok(new { Value = await ReadNode(nodeName) });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+
+
+
+
+
+        // DEBUG ONLY
+        //mehrere Nodes
+        [HttpPost("readSNodeList")]
+        public async Task<IActionResult> ApiReadNodeList([FromBody] List<string> nodeNames)
+        {
+
+            try
+            {
+                // Ruft die Methode ReadNode auf, die den Wert für den angegebenen Node-Namen liest und umwandelt.
+                return Ok(new { Value = await ReadNodes(nodeNames) });
             }
             catch (Exception ex)
             {

@@ -14,8 +14,6 @@ namespace Maschinenampel.Server.Services
         private Session _session;
         private ApplicationConfiguration _appConfig;
 
-        private bool _isInitialized = false;
-
         public OPC_Service(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -46,7 +44,7 @@ namespace Maschinenampel.Server.Services
                 };
 
                 // Debug-Log: Überprüfen der Konfiguration
-                Console.WriteLine("Validiere die Anwendungskonfiguration...");
+                Console.WriteLine("Validiere die OPC-Anwendungskonfiguration...");
                 await _appConfig.Validate(ApplicationType.Client);
 
                 // Sicherheitsmodus verarbeiten
@@ -93,14 +91,25 @@ namespace Maschinenampel.Server.Services
                     userIdentity,
                     null);
 
-                _isInitialized = true;
 
                 Console.WriteLine("Verbindung zum OPC UA Server erfolgreich hergestellt.");
 
                 //BSP Node auslesen. DEBUG ONLY
                 //await ReadNodeAsync("Beispiele für Datentyp.16 Bit-Gerät.B-Register.Boolean1");
+
+
+
+
+
                 
-            }
+
+
+
+
+
+
+
+                }
             catch (Exception ex)
             {
                 // Detaillierte Fehlermeldung ausgeben
@@ -128,7 +137,6 @@ namespace Maschinenampel.Server.Services
             {
                 await Task.Run(() => _session.Close());
                 _session.Dispose();
-                _isInitialized = false;
                 Console.WriteLine("Verbindung zum OPC UA Server getrennt.");
             }
         }
@@ -138,7 +146,7 @@ namespace Maschinenampel.Server.Services
 
 
 
-
+        //nur einen Node auslesen
         public async Task<bool> ReadNodeAsync(string node)
         {
             //Node-ID aus namespace und Adresse im Stringformat zusammensetzten
@@ -188,7 +196,8 @@ namespace Maschinenampel.Server.Services
                 /*foreach (var dataValue in dataValues)
                 {
                     Console.WriteLine($"NodeId {nodeId}: {dataValue.Value}");
-                }*/
+                }
+                return true;*/
 
 
                 // Erfolgreiche Rückgabe des Werts als bool
@@ -209,6 +218,106 @@ namespace Maschinenampel.Server.Services
                 throw;
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //mehrer Nodes gleichzeitig auslesen
+        public async Task<Dictionary<string, bool>> ReadNodesAsync(IEnumerable<string> nodes)
+        {
+            // Dictionary für die Ergebnisse
+            var results = new Dictionary<string, bool>();
+
+            try
+            {
+                // Sicherstellen, dass die Session korrekt initialisiert ist
+                if (_session == null)
+                {
+                    throw new InvalidOperationException("Die OPC UA Session ist nicht initialisiert.");
+                }
+
+                // Collection für die zu lesenden Nodes
+                var nodesToRead = new ReadValueIdCollection();
+
+                // Node-IDs aus der Eingabeliste erstellen
+                //Node-ID aus namespace und Adresse im Stringformat zusammensetzten
+                //https://stackoverflow.com/questions/57562971/what-is-the-significance-of-ns-2s-in-an-opc-node-path
+                foreach (var node in nodes)
+                {
+                    string nodeId = "ns=" + _opcServerConfiguration.Opc_Namespace + ";s=" + node;
+                    nodesToRead.Add(new ReadValueId
+                    {
+                        NodeId = new NodeId(nodeId),
+                        AttributeId = Attributes.Value
+                    });
+                }
+
+                // Leseoperation durchführen
+                var readResult = _session.Read(
+                    null,
+                    0,
+                    TimestampsToReturn.Both,
+                    nodesToRead,
+                    out var dataValues,
+                    out var diagnosticInfos
+                );
+
+                // Überprüfen, ob das Ergebnis gültig ist
+                if (dataValues == null || dataValues.Count != nodesToRead.Count)
+                {
+                    throw new Exception("Fehler: Die Antwort enthält nicht alle angeforderten Werte.");
+                }
+
+                // Ergebnisse durchlaufen und boolean-Werte extrahieren
+                for (int i = 0; i < dataValues.Count; i++)
+                {
+                    var dataValue = dataValues[i];
+                    var nodeId = nodesToRead[i].NodeId.ToString();
+
+                    // StatusCode prüfen
+                    if (dataValue.StatusCode == Opc.Ua.StatusCodes.Good)
+                    {
+                        // Wert prüfen und hinzufügen
+                        if (dataValue.Value is bool booleanValue)
+                        {
+                            results[nodeId] = booleanValue;
+                            
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Der Wert von Node {nodeId} ist kein boolescher Typ.");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception($"Fehler beim Lesen von Node {nodeId}: {dataValue.StatusCode}");
+                    }
+                }
+
+                return results;
+            }
+            catch (Exception ex)
+            {
+                // Fehlerprotokollierung
+                Console.WriteLine($"Fehler beim Lesen der Nodes: {ex.Message}");
+                throw;
+            }
+        }
+
+
+
+
 
 
 
