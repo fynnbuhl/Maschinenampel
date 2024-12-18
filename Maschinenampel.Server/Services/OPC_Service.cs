@@ -14,6 +14,7 @@ namespace Maschinenampel.Server.Services
         private Session _session;
         private ApplicationConfiguration _appConfig;
 
+
         public OPC_Service(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -133,11 +134,25 @@ namespace Maschinenampel.Server.Services
         //mehrere Nodes gleichzeitig auslesen
         public async Task<Dictionary<string, bool>> ReadNodesAsync(IEnumerable<string> nodes)
         {
+
+
+            //Wenn Node "DEMO" enthält wird Demomodus aktiviert und Bitstatus zufällig gesetzt
+            if (nodes.Any(node => node.Contains("DEMO")))
+            {
+                Console.WriteLine("--- DEMO AKTIV ---");
+                return DemoBits(nodes);
+            }
+
+
+
+
+
             // Dictionary für die Ergebnisse
             var results = new Dictionary<string, bool>();
 
             try
             {
+
                 // Sicherstellen, dass die Session korrekt initialisiert ist
                 if (_session == null)
                 {
@@ -189,7 +204,7 @@ namespace Maschinenampel.Server.Services
                         if (dataValue.Value is bool booleanValue)
                         {
                             results[nodeId] = booleanValue;
-                            
+                                                        
                         }
                         else
                         {
@@ -213,6 +228,24 @@ namespace Maschinenampel.Server.Services
         }
 
 
+
+
+
+        //DEMO Only
+        private static readonly Random random = new Random();
+        public static Dictionary<string, bool> DemoBits(IEnumerable<string> nodes)
+        {
+            // Neues Dictionary erstellen
+            var res = new Dictionary<string, bool>();
+
+            // Durch die nodes iterieren und zufällige bool-Werte zuweisen
+            foreach (var node in nodes)
+            {
+                res[node] = random.Next(2) == 0; // 0 -> false, 1 -> true
+            }
+
+            return res;
+        }
 
 
 

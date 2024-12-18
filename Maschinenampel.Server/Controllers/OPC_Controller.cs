@@ -197,23 +197,23 @@ namespace Maschinenampel.Server.Controllers
         // Diese Methode wird verwendet, um die aktuellen Bitzustände (true/false als 1/0) der übergebenen Adressen abzurufen und in einem 2D-Array (int[][]) zu speichern.
         private async Task<int[][]> UpdateBits(string[][] OPC_Addr, int[][] OPC_Bits)
         {
-            // Äußere Schleife: Iteration durch die Zeilen des 2D-Arrays OPC_Addr
+            // Äußere Schleife: Iteration durch die Zeilen des 2D-Arrays OPC_Addr (über alle Amplen)
             for (int i = 0; i < OPC_Addr.Length; i++)
             {
-                // Innere Schleife: Iteration durch jede Spalte (Adresse) innerhalb der aktuellen Zeile
+                // Innere Schleife: Iteration durch jede Spalte (Adresse) innerhalb der aktuellen Zeile (einer Ampel)
                 for (int j = 0; j < OPC_Addr[i].Length; j++)
                 {
                     // DEBUG-Log: Gibt die aktuelle Position und Adresse in der Konsole aus
                     // Console.WriteLine($"POS: {i},{j}, Addr: {OPC_Addr[i][j]}");
 
-                    // Fügt die aktuelle Adresse zur Liste `nodeNames` hinzu, um später gelesen zu werden
+                    // Fügt die aktuelle Adresse zur Liste `nodeNames` hinzu, um die gesammmte Ampel zusammenzusetzten
                     nodeNames.Add(OPC_Addr[i][j]);
                 }
 
 
                 try
                 {
-                    // Ruft die Methode `ReadNodesAsync` auf, die alle Adressen in `nodeNames` gleichzeitig ausliest.
+                    // Ruft pro Ampel die Methode `ReadNodesAsync` auf, die alle Adressen in `nodeNames` gleichzeitig ausliest.
                     // Ergebnis ist ein Dictionary<string, bool>, das den Node-Namen mit seinem aktuellen Wert (true/false) verknüpft.
                     var nodeResults = await _opcService.ReadNodesAsync(nodeNames);
                                     
