@@ -136,7 +136,7 @@ namespace Maschinenampel.Server.Services
         {
 
 
-            //Wenn Node "DEMO" enthält wird Demomodus aktiviert und Bitstatus zufällig gesetzt
+            //Wenn ein Node der Ampel "DEMO" enthält wird Demomodus aktiviert und Bitstatus zufällig gesetzt
             if (nodes.Any(node => node.Contains("DEMO")))
             {
                 Console.WriteLine("--- DEMO AKTIV ---");
